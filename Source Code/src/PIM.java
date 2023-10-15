@@ -1,6 +1,6 @@
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
+//MODIFICATIONS: try creating and searching Text Note
 // this class Tuple is just a sample
 class Tuple {
     private Object[] data;
@@ -27,24 +27,41 @@ interface PIMInterface {
 
 
 class PIMKernel {
-    private ArrayList<PIMInterface> pimItems;
+    private Map<String, List<PIMInterface>> pimItems;
 
     public PIMKernel() {
-        pimItems = new ArrayList<>();
+        pimItems = new HashMap<>();
     }
 
-    public PIMInterface create_PIR(String type, Object... data) {
-        // TODO: Implement this method
-        return null;
+    public void create_PIR(PIMInterface data) {
+        String type = data.getType();
+        pimItems.computeIfAbsent(type, k -> new ArrayList<>()).add(data);
     }
 
     public void modify_PIR(PIMInterface pir) {
         // TODO: Implement this method
     }
 
-    public ArrayList<PIMInterface> search_PIR(Object... criteria) {
-        // TODO: Implement this method
-        return null;
+    public List<PIMInterface> search_PIR(Object ... criteria) {
+        // assuming no criteria
+        String type = (String) criteria[0];
+        List<PIMInterface> list = pimItems.get(type);
+        String partitionLine = null;
+        if (type == "Text"){
+            System.out.printf("%-2s | %-10s | %-30s%n", "ID", "Title", "Content");
+            partitionLine = new String(new char[46]).replace('\0', '_');
+        }
+        for (PIMInterface tuple : list) {
+            if (type == "Text"){
+                Text text = (Text) tuple;
+                int id = (int) text.getID();
+                String title = (String) text.getTitle();
+                String content = (String) text.getContent();
+                System.out.println(partitionLine);
+                System.out.printf("%-2d | %-10s | %-30s%n", id, title, content);
+            }
+        }
+        return list;
     }
 
     public void delete_PIR(PIMInterface pir) {
@@ -63,16 +80,31 @@ class PIMKernel {
 
 // Text
 class Text implements PIMInterface {
-    private String type = "Text";
+    // STATIC variable to keep track of the next available ID
+    private static int nextId = 1;
+    private static String type = "Text";
     private int ID;
     private String title;
     private String content;
 
+    public static Text create(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Title: ");
+        String title = scanner.next();
+        System.out.println("Note: ");
+        String content = scanner.next();
+        Tuple textData = new Tuple(nextId, title, content);
+        Text text = new Text(textData);
+        System.out.println("The text is successfully added to the system.");
+        return text;
+    }
     public Text(Tuple data) {
         Object[] dataArray = data.getData();
         this.ID = (int) dataArray[0];
         this.title = (String) dataArray[1];
         this.content = (String) dataArray[2];
+        // when new object is created, static id increments
+        nextId++;
     }
 
     @Override
@@ -282,12 +314,87 @@ class Contact implements PIMInterface {
 
 // PIM
 public class PIM {
+
     private static PIMKernel kernel = new PIMKernel();
 
+    private static int moves(){
+        System.out.println("1. Create");
+        System.out.println("2. Search (Modify & Delete)");
+        System.out.println("3. Exit the System");
+        System.out.print("Choose an option:");
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+        return choice;
+    }
+
+    private static String types(){
+        System.out.println("1. Text Note");
+        System.out.println("2. Task");
+        System.out.println("3. Event");
+        System.out.println("4. Contact");
+        System.out.print("Choose an option:");
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                return "Text";
+            case 2:
+                return "Task";
+            case 3:
+                return "Event";
+            case 4:
+                return "Contact";
+            default:
+                System.out.println("Invalid choice. Please choose a valid option.");
+        }
+        return null;
+    }
+    private static int home(){
+        System.out.println("Welcome to the Personal Information Management System!");
+        int choice = moves();
+
+        String type;
+        switch (choice) {
+            case 1:
+                System.out.println("Which information do you want to create?");
+                type = types();
+                PIMInterface data = null;
+                switch (type) {
+                    case "Text":
+                        data = Text.create();
+
+                    default:
+                        break;
+                }
+                kernel.create_PIR(data);
+                break;
+            case 2:
+                System.out.println("Which information do you want to search?");
+                type = types();
+                kernel.search_PIR(type);
+                switch (type) {
+                    case "Text":
+
+                        System.out.println("Provide a keyword to narrow down the search.");
+                    default:
+                        break;
+                }
+                break;
+            case 3:
+                System.out.println("System Ended.");
+                return -1;
+            default:
+                System.out.println("Invalid choice. Please choose a valid option.");
+        }
+        return 1;
+    }
     public static void main(String[] args) {
-        Tuple textData = new Tuple(1, "Sample Title", "This is a sample content.");
-        PIMInterface text = kernel.create_PIR("Text", textData);
+        int cmd = 0;
+        while(cmd != -1){
+            cmd = home();
+        }
+        //Tuple textData = new Tuple(1, "Sample Title", "This is a sample content.");
+        //PIMInterface text = kernel.create_PIR("Text", textData);
 
     }
 }
-
