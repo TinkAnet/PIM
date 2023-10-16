@@ -1,4 +1,6 @@
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 //MODIFICATIONS: try creating and searching Text Note
 // this class Tuple is just a sample
@@ -19,7 +21,6 @@ interface PIMInterface {
     String getTitle();
     Tuple getData();
 }
-
 
 
 // PIMKernel
@@ -50,6 +51,12 @@ class PIMKernel {
             System.out.printf("%-2s | %-10s | %-30s%n", "ID", "Title", "Content");
             partitionLine = new String(new char[46]).replace('\0', '_');
         }
+        else if (type == "Task"){
+            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
+            partitionLine = new String(new char[46]).replace('\0', '_');
+        }
+        // TODO: Implement contact and event
+
         for (PIMInterface tuple : list) {
             if (type == "Text"){
                 Text text = (Text) tuple;
@@ -59,6 +66,16 @@ class PIMKernel {
                 System.out.println(partitionLine);
                 System.out.printf("%-2d | %-10s | %-30s%n", id, title, content);
             }
+            else if(type == "Task"){
+                Task task = (Task) tuple;
+                int id = (int) task.getID();
+                String title = (String) task.getTitle();
+                String description = (String) task.getDescription();
+                Date date = (Date) task.getDueDate();
+                System.out.println(partitionLine);
+                System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
+            }
+            // TODO: Implement contact and event
         }
         return list;
     }
@@ -94,7 +111,7 @@ class Text implements PIMInterface {
         String content = scanner.nextLine();
         Tuple textData = new Tuple(nextId, title, content);
         Text text = new Text(textData);
-        System.out.println("The text is successfully added to the system.");
+        System.out.println("The text is successfully added to the system.\n");
         return text;
     }
     public Text(Tuple data) {
@@ -138,11 +155,34 @@ class Text implements PIMInterface {
 
 // Task
 class Task implements PIMInterface {
-    private String type = "Task";
+    private static int nextId = 1;
+    private static String type = "Task";
     private int ID;
     private String title;
     private String description;
-    private Date dueDate;
+    private static Date dueDate;
+
+    public static Task create(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Title: ");
+        String title = scanner.nextLine();
+        System.out.print("Description: ");
+        String description = scanner.nextLine();
+        System.out.print("DueDate in format dd-MM-yyyy");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
+        try {
+            dueDate = sdf.parse(scanner.nextLine());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+        }
+
+        Tuple textData = new Tuple(nextId, title, description, dueDate);
+        Task task = new Task(textData);
+        System.out.println("The task is successfully added to the system.\n");
+        return task;
+    }
 
     public Task(Tuple data) {
         Object[] dataArray = data.getData();
@@ -361,7 +401,10 @@ public class PIM {
                 switch (type) {
                     case "Text":
                         data = Text.create();
-
+                        break;
+                    case "Task":
+                        data = Task.create();
+                        break;
                     default:
                         break;
                 }
@@ -371,13 +414,13 @@ public class PIM {
                 System.out.println("Which information do you want to search?");
                 type = types();
                 kernel.search_PIR(type);
-                switch (type) {
-                    case "Text":
-
-                        System.out.println("Provide a keyword to narrow down the search.");
-                    default:
-                        break;
-                }
+//                switch (type) {
+//                    case "Text":
+//
+//                        System.out.println("Provide a keyword to narrow down the search.");
+//                    default:
+//                        break;
+//                }
                 break;
             case 3:
                 System.out.println("System Ended.");
