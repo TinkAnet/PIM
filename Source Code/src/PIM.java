@@ -19,7 +19,6 @@ interface PIMInterface {
     String getTitle();
     Tuple getData();
 }
-//s
 
 
 
@@ -90,9 +89,9 @@ class Text implements PIMInterface {
     public static Text create(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("Title: ");
-        String title = scanner.next();
-        System.out.println("Note: ");
-        String content = scanner.next();
+        String title = scanner.nextLine();
+        System.out.print("Note: ");
+        String content = scanner.nextLine();
         Tuple textData = new Tuple(nextId, title, content);
         Text text = new Text(textData);
         System.out.println("The text is successfully added to the system.");
