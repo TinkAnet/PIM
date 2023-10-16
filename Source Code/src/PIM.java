@@ -81,8 +81,25 @@ class PIMKernel {
     }
 
     public void delete_PIR(PIMInterface pir) {
+        String type = pir.getType();
+        int id = pir.getID();
+
+        List<PIMInterface> items = pimItems.get(type);
+        if (items != null) {
+            // delete PIM by iterator
+            Iterator<PIMInterface> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next().getID() == id) {
+                    iterator.remove();
+                    System.out.println("Item deleted successfully.");
+                    return;
+                }
+            }
+        }
+        System.out.println("No item found with the given type and ID.");
         // TODO: Implement this method
     }
+
 
     public void export(String pathway) {
         // TODO: Implement this method
@@ -360,6 +377,7 @@ public class PIM {
         System.out.println("1. Create");
         System.out.println("2. Search (Modify & Delete)");
         System.out.println("3. Exit the System");
+        System.out.println("4. Delete");
         System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
@@ -425,9 +443,24 @@ public class PIM {
             case 3:
                 System.out.println("System Ended.");
                 return -1;
+            case 4:
+                System.out.println("Which information do you want to delete?");
+                type = types();
+                System.out.println("Please provide the ID of the item you want to delete:");
+                int idToDelete = new Scanner(System.in).nextInt();
+
+                List<PIMInterface> itemsOfType = kernel.search_PIR(type);
+                for (PIMInterface item : itemsOfType) {
+                    if (item.getID() == idToDelete) {
+                        kernel.delete_PIR(item);
+                        break;
+                    }
+                }
+                break;
             default:
                 System.out.println("Invalid choice. Please choose a valid option.");
         }
+
         return 1;
     }
     public static void main(String[] args) {
