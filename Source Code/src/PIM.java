@@ -2,8 +2,6 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
-//MODIFICATIONS: try creating and searching Text Note
-// this class Tuple is just a sample
 class Tuple {
     private Object[] data;
     public Tuple(Object... data) {
@@ -21,60 +19,65 @@ class Tuple {
 
 
 class PIMKernel {
-    private Map<String, List<PIMInterface>> pimItems;
+    private Map<String, Map<Integer, PIMInterface>> pimItems;
 
     public PIMKernel() {
         pimItems = new HashMap<>();
     }
 
-    public void create_PIR(PIMInterface data) {
-        String type = data.getType();
-        pimItems.computeIfAbsent(type, k -> new ArrayList<>()).add(data);
+    public Map<String, Map<Integer, PIMInterface>> getItems(){
+        return pimItems;
+    }
+    private static String types(){
+        System.out.println("1. Text Note");
+        System.out.println("2. Task");
+        System.out.println("3. Event");
+        System.out.println("4. Contact");
+        System.out.print("Choose an option:");
+        Scanner scanner = new Scanner(System.in);
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1: return "Text";
+            case 2: return "Task";
+            case 3: return "Event";
+            case 4: return "Contact";
+            default: System.out.println("Invalid choice. Please choose a valid option.");
+        }
+        return null;
+    }
+
+    public void create_PIR() {
+        System.out.println("\n\n");
+        System.out.println("Which information do you want to create?");
+        String type = types();
+        PIMInterface data = null;
+        switch (type) {
+            case "Text": data = new Text(); break;
+            case "Task": data = new Task(); break;
+            default: break;
+        }
+        pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
     }
 
     public void modify_PIR(PIMInterface pir) {
         // TODO: Implement this method
     }
 
-    public List<PIMInterface> search_PIR(Object ... criteria) {
-        // assuming no criteria
-        String type = (String) criteria[0];
-        List<PIMInterface> list = pimItems.get(type);
-        String partitionLine = null;
-        if (type == "Text"){
-            System.out.printf("%-2s | %-10s | %-30s%n", "ID", "Title", "Content");
-            partitionLine = new String(new char[46]).replace('\0', '_');
+    public void search_PIR() {
+        System.out.println("\n\n");
+        System.out.println("Which information do you want to search?");
+        String type = types();
+        if (pimItems.get(type) == null) {System.out.println("No data in the system."); return;}
+        switch (type) {
+            case "Text": Text.search(this); break;
+            case "Task": Task.search(this); break;
+            case "Event":
+            default:
         }
-        else if (type == "Task"){
-            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
-            partitionLine = new String(new char[46]).replace('\0', '_');
-        }
-        // TODO: Implement contact and event
-
-        for (PIMInterface tuple : list) {
-            if (type == "Text"){
-                Text text = (Text) tuple;
-                int id = (int) text.getID();
-                String title = (String) text.getTitle();
-                String content = (String) text.getContent();
-                System.out.println(partitionLine);
-                System.out.printf("%-2d | %-10s | %-30s%n", id, title, content);
-            }
-            else if(type == "Task"){
-                Task task = (Task) tuple;
-                int id = (int) task.getID();
-                String title = (String) task.getTitle();
-                String description = (String) task.getDescription();
-                Date date = (Date) task.getDueDate();
-                System.out.println(partitionLine);
-                System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
-            }
-            // TODO: Implement contact and event
-        }
-        return list;
     }
 
-    public void delete_PIR(PIMInterface pir) {
+
+    /*public void delete_PIR(PIMInterface pir) {
         String type = pir.getType();
         int id = pir.getID();
 
@@ -92,7 +95,7 @@ class PIMKernel {
         }
         System.out.println("No item found with the given type and ID.");
         // TODO: Implement this method
-    }
+    }*/
 
 
     public void export(String pathway) {
@@ -130,76 +133,27 @@ public class PIM {
     private static PIMKernel kernel = new PIMKernel();
 
     private static int moves(){
+        System.out.println("\n\n");
+        System.out.println("[ Home Page ]");
         System.out.println("1. Create");
         System.out.println("2. Search (Modify & Delete)");
         System.out.println("3. Exit the System");
-        System.out.println("4. Delete");
         System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
+        System.out.print("\n\n");
         return choice;
     }
-
-    private static String types(){
-        System.out.println("1. Text Note");
-        System.out.println("2. Task");
-        System.out.println("3. Event");
-        System.out.println("4. Contact");
-        System.out.print("Choose an option:");
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-        switch (choice) {
-            case 1:
-                return "Text";
-            case 2:
-                return "Task";
-            case 3:
-                return "Event";
-            case 4:
-                return "Contact";
-            default:
-                System.out.println("Invalid choice. Please choose a valid option.");
-        }
-        return null;
-    }
     private static int home(){
-        System.out.println("Welcome to the Personal Information Management System!");
         int choice = moves();
-
         String type;
         switch (choice) {
-            case 1:
-                System.out.println("Which information do you want to create?");
-                type = types();
-                PIMInterface data = null;
-                switch (type) {
-                    case "Text":
-                        data = Text.create();
-                        break;
-                    case "Task":
-                        data = Task.create();
-                        break;
-                    default:
-                        break;
-                }
-                kernel.create_PIR(data);
-                break;
-            case 2:
-                System.out.println("Which information do you want to search?");
-                type = types();
-                kernel.search_PIR(type);
-//                switch (type) {
-//                    case "Text":
-//
-//                        System.out.println("Provide a keyword to narrow down the search.");
-//                    default:
-//                        break;
-//                }
-                break;
+            case 1: kernel.create_PIR(); break;
+            case 2: kernel.search_PIR(); break;
             case 3:
                 System.out.println("System Ended.");
                 return -1;
-            case 4:
+            /*case 4:
                 System.out.println("Which information do you want to delete?");
                 type = types();
                 System.out.println("Please provide the ID of the item you want to delete:");
@@ -212,7 +166,7 @@ public class PIM {
                         break;
                     }
                 }
-                break;
+                break;*/
             default:
                 System.out.println("Invalid choice. Please choose a valid option.");
         }
@@ -220,6 +174,7 @@ public class PIM {
         return 1;
     }
     public static void main(String[] args) {
+        System.out.println("Welcome to the Personal Information Management System!");
         int cmd = 0;
         while(cmd != -1){
             cmd = home();

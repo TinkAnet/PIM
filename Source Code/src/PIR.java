@@ -1,13 +1,36 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 
 interface PIMInterface {
     String getType();
     int getID();
     String getTitle();
     Tuple getData();
+
+
+
+    static void printWrappedText(String text, int lineLength) {
+        String[] words = text.split(" ");
+        StringBuilder lineBuilder = new StringBuilder();
+        boolean firstWord = true;
+
+        for (String word : words) {
+            if (lineBuilder.length() + word.length() + (firstWord ? 0 : 1) > lineLength) {
+                // Print the current line
+                System.out.println(lineBuilder.toString());
+                lineBuilder.setLength(0);  // Reset the lineBuilder
+                firstWord = true;
+            }
+
+            if (!firstWord) {
+                lineBuilder.append(" ");
+            }
+            lineBuilder.append(word);
+            firstWord = false;
+        }
+        System.out.println(lineBuilder.toString());
+    }
 }
 
 class Contact implements PIMInterface {
@@ -77,36 +100,39 @@ class Task implements PIMInterface {
     private int ID;
     private String title;
     private String description;
-    private static Date dueDate;
-
-    public static Task create(){
+    private Date dueDate;
+    public Task() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Title: ");
-        String title = scanner.nextLine();
+        this.title = scanner.nextLine();
         System.out.print("Description: ");
-        String description = scanner.nextLine();
+        this.description = scanner.nextLine();
         System.out.print("DueDate in format dd-MM-yyyy");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
         try {
-            dueDate = sdf.parse(scanner.nextLine());
+            this.dueDate = sdf.parse(scanner.nextLine());
         } catch (ParseException e) {
             e.printStackTrace();
             System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
         }
-
-        Tuple textData = new Tuple(nextId, title, description, dueDate);
-        Task task = new Task(textData);
         System.out.println("The task is successfully added to the system.\n");
-        return task;
+        this.ID = nextId++;
     }
 
-    public Task(Tuple data) {
-        Object[] dataArray = data.getData();
-        this.ID = (int) dataArray[0];
-        this.title = (String) dataArray[1];
-        this.description = (String) dataArray[2];
-        this.dueDate = (Date) dataArray[3];
+    public static void search(PIMKernel kernel){
+        Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+        System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
+        String partitionLine = new String(new char[46]).replace('\0', '_');
+        for (PIMInterface tuple : items.values()) {
+            Task task = (Task) tuple;
+            int id = (int) task.getID();
+            String title = (String) task.getTitle();
+            String description = (String) task.getDescription();
+            Date date = (Date) task.getDueDate();
+            System.out.println(partitionLine);
+            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
+        }
     }
 
     @Override
@@ -154,29 +180,125 @@ class Text implements PIMInterface {
     private String title;
     private String content;
 
-    public static Text create(){
+    public Text() {
+        System.out.println("\n\n");
         Scanner scanner = new Scanner(System.in);
         System.out.print("Title: ");
-        String title = scanner.nextLine();
+        this.title = scanner.nextLine();
         System.out.print("Note: ");
-        String content = scanner.nextLine();
-        Tuple textData = new Tuple(nextId, title, content);
-        Text text = new Text(textData);
+        this.content = scanner.nextLine();
         System.out.println("The text is successfully added to the system.\n");
-        return text;
+        this.ID = nextId++;
     }
-    public Text(Tuple data) {
-        Object[] dataArray = data.getData();
-        this.ID = (int) dataArray[0];
-        this.title = (String) dataArray[1];
-        this.content = (String) dataArray[2];
-        // when new object is created, static id increments
-        nextId++;
+
+    public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
+        if (items.isEmpty()) {System.out.println("No data"); return null;}
+        else {
+            Map<Integer, Integer> displayNumberToId = new HashMap<>();
+            int displayNumber = 1;
+            String partitionLine = new String(new char[120]).replace('\0', '-');
+            System.out.printf(partitionLine + "%n|%-2s | %-40s | %-70s|%n", "#", "Title", "Note");
+            for (PIMInterface tuple : items) {
+                Text text = (Text) tuple;
+                displayNumberToId.put(displayNumber, text.getID());
+                String title = (String) text.getTitle();
+                String content = (String) text.getContent();
+                title = title.length() > 40 - 3 ? title.substring(0, 40 - 3) + "..." : title;
+                content = content.length() > 70 - 3 ? content.substring(0, 70 - 3) + "..." : content;
+                System.out.printf(partitionLine + "%n|%-2d | %-40s | %-70s|%n", displayNumber, title, content);
+                displayNumber++;
+            }
+            System.out.println(partitionLine);
+            return displayNumberToId;
+        }
+    }
+
+    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+
+        for (PIMInterface item : items) {
+            Text text = (Text) item;
+            String title = text.getTitle();
+            String content = text.getContent();
+
+            if (title.toLowerCase().contains(keyword.toLowerCase()) || content.toLowerCase().contains(keyword.toLowerCase())) {
+                // If the title or content contains the keyword, add it to the filtered items
+                filteredItems.put(text.getID(), item);
+            }
+        }
+
+        return filteredItems;
+    }
+    public static void search(PIMKernel kernel){
+        Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+        if (items.isEmpty()){
+            System.out.println("No data");
+            return;
+        }
+        List<String> keywords = new ArrayList<>();
+        Map<Integer, Integer> displayNumberToId;
+        Map<Integer, PIMInterface> copy = items;
+        while (true){
+            System.out.println("\n\n");
+            if (!keywords.isEmpty()){
+                String keywordString = String.join(", ", keywords);
+                System.out.println("Applied Keywords: " + keywordString);
+            }
+            displayNumberToId = print(copy.values());
+            System.out.println("1. Expand PIR by #");
+            System.out.println("2. Narrow down the search by Keyword");
+            System.out.print("Choose an option: ");
+            Scanner scanner = new Scanner(System.in);
+            int cmd = scanner.nextInt();
+            if (cmd == 0) break;
+
+            if (cmd == 1){
+                System.out.print("Enter #: ");
+                int displayNumber = scanner.nextInt();
+                int id = displayNumberToId.get(displayNumber);
+                Text text  = (Text) copy.get(id);
+                System.out.println("\n\n");
+                System.out.println("<Title>");
+                PIMInterface.printWrappedText(text.getTitle(), 120);
+                System.out.println("<Content>");
+                PIMInterface.printWrappedText(text.getContent(), 120);
+                System.out.println("\n\n(1) Modify, (2) Delete, (3) Go Back");
+                System.out.print("Choose an option: ");
+                scanner = new Scanner(System.in);
+                int option = scanner.nextInt();
+                if (option == 1){
+                    System.out.println("\n\n");
+                    scanner.nextLine();
+                    System.out.print("Enter the modified title: ");
+                    text.setTitle(scanner.nextLine());
+                    System.out.print("Enter the modified content: ");
+                    text.setContent(scanner.nextLine());
+                    System.out.println("PIR content modified successfully.");
+                    return;
+                }
+                else if (option == 2){
+                    items.remove(id);
+                    System.out.println("PIR content deleted successfully.");
+                    return;
+                }
+            }
+            else{ //cmd == 2
+                scanner.nextLine();
+                System.out.print("Enter Keyword: ");
+                String keyword = scanner.nextLine();
+                keywords.add(keyword);
+                copy = filterByKeyword(copy.values(), keyword);
+            }
+        }
     }
 
     @Override
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
