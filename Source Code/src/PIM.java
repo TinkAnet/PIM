@@ -1,3 +1,5 @@
+import java.io.*;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -12,12 +14,7 @@ class Tuple {
     }
 }
 
-// PIMInterface
-
-
 // PIMKernel
-
-
 class PIMKernel {
     private Map<String, Map<Integer, PIMInterface>> pimItems;
 
@@ -71,7 +68,6 @@ class PIMKernel {
         switch (type) {
             case "Text": Text.search(this); break;
             case "Task": Task.search(this); break;
-            case "Event":
             default:
         }
     }
@@ -98,36 +94,58 @@ class PIMKernel {
     }*/
 
 
-    public void export(String pathway) {
-        // TODO: Implement this method
+    public void export() {
+        try{
+            System.out.println("Name the file where you want to export: ");
+            Scanner scanner = new Scanner(System.in);
+            String filename = scanner.nextLine();
+
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename+".pim"));
+            out.flush();
+
+            out.writeObject(pimItems);
+            out.flush();
+            out.close();
+
+            System.out.printf("PIRs exported to %s successfully",filename);
+        }catch(IOException e){
+            System.out.printf("Failed to export: %s",e);
+        }
     }
 
-    public void load(String pathway) {
+    public void load() {
         // TODO: Implement this method
+        try{
+            System.out.println("Enter the filename to be load from: ");
+            Scanner scanner = new Scanner(System.in);
+            String filename = scanner.nextLine();
+
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename+".pim"));
+            pimItems = (Map<String, Map<Integer, PIMInterface>>) in.readObject();
+
+            if(pimItems.containsKey("Text")){
+                Text.setNextId(pimItems.get("Text").size()+1);
+            }
+            if(pimItems.containsKey("Task")){
+                Task.setNextId(pimItems.get("Task").size()+1);
+            }
+            if(pimItems.containsKey("Contact")){
+                Contact.setNextId(pimItems.get("Contact").size()+1);
+            }
+            if(pimItems.containsKey("Event")){
+                Event.setNextId(pimItems.get("Event").size()+1);
+            }
+
+            in.close();
+
+            System.out.printf("PIRs loaded from %s successfully",filename);
+        }catch(Exception e){
+            System.out.printf("Failed to load: %s",e);
+        }
     }
 }
 
 
-// Text
-
-
-
-// Task
-
-
-
-// Event
-
-
-
-// Contact
-
-
-
-
-
-
-// PIM
 public class PIM {
 
     private static PIMKernel kernel = new PIMKernel();
@@ -137,7 +155,9 @@ public class PIM {
         System.out.println("[ Home Page ]");
         System.out.println("1. Create");
         System.out.println("2. Search (Modify & Delete)");
-        System.out.println("3. Exit the System");
+        System.out.println("3. Export");
+        System.out.println("4. Load");
+        System.out.println("5. Exit the System");
         System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
@@ -150,7 +170,9 @@ public class PIM {
         switch (choice) {
             case 1: kernel.create_PIR(); break;
             case 2: kernel.search_PIR(); break;
-            case 3:
+            case 3: kernel.export(); break;
+            case 4: kernel.load(); break;
+            case 5:
                 System.out.println("System Ended.");
                 return -1;
             /*case 4:

@@ -1,14 +1,13 @@
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-interface PIMInterface {
-    String getType();
-    int getID();
-    String getTitle();
-    Tuple getData();
-
-
+abstract class PIMInterface {
+    abstract String getType();
+    abstract int getID();
+    abstract String getTitle();
+    abstract Tuple getData();
 
     static void printWrappedText(String text, int lineLength) {
         String[] words = text.split(" ");
@@ -31,9 +30,11 @@ interface PIMInterface {
         }
         System.out.println(lineBuilder.toString());
     }
+    static void setNextID(int newID){}
 }
 
-class Contact implements PIMInterface {
+class Contact extends PIMInterface implements Serializable {
+    private static int nextId = 1;
     private String type = "Contact";
     private int ID;
     private String name;
@@ -92,9 +93,12 @@ class Contact implements PIMInterface {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+    public static void setNextId(int nextId) {
+        Contact.nextId = nextId;
+    }
 }
 
-class Task implements PIMInterface {
+class Task extends PIMInterface implements Serializable {
     private static int nextId = 1;
     private static String type = "Task";
     private int ID;
@@ -170,9 +174,13 @@ class Task implements PIMInterface {
     public void setDueDate(Date dueDate) {
         this.dueDate = dueDate;
     }
+
+    public static void setNextId(int nextId) {
+        Task.nextId = nextId;
+    }
 }
 
-class Text implements PIMInterface {
+class Text extends PIMInterface implements Serializable {
     // STATIC variable to keep track of the next available ID
     private static int nextId = 1;
     private static String type = "Text";
@@ -323,9 +331,14 @@ class Text implements PIMInterface {
     public void setContent(String content) {
         this.content = content;
     }
+
+    public static void setNextId(int nextId) {
+        Text.nextId = nextId;
+    }
 }
 
-class Event implements PIMInterface {
+class Event extends PIMInterface implements Serializable {
+    private static int nextId = 1;
     private String type = "Event";
     private int ID;
     private String title;
@@ -375,5 +388,9 @@ class Event implements PIMInterface {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public static void setNextId(int nextId) {
+        Event.nextId = nextId;
     }
 }
