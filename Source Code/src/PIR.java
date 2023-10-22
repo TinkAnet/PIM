@@ -120,8 +120,10 @@ class Task extends PIMInterface implements Serializable {
             e.printStackTrace();
             System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
         }
+        Utils.cls();
         System.out.println("The task is successfully added to the system.\n");
         this.ID = nextId++;
+        Utils.ptc();
     }
 
     public static void search(PIMKernel kernel){
@@ -189,14 +191,17 @@ class Text extends PIMInterface implements Serializable {
     private String content;
 
     public Text() {
-        System.out.println("\n\n");
+        //System.out.println("\n\n");
+        Utils.cls();
         Scanner scanner = new Scanner(System.in);
         System.out.print("Title: ");
         this.title = scanner.nextLine();
         System.out.print("Note: ");
         this.content = scanner.nextLine();
+        Utils.cls();
         System.out.println("The text is successfully added to the system.\n");
         this.ID = nextId++;
+        Utils.ptc();
     }
 
     public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
@@ -247,7 +252,8 @@ class Text extends PIMInterface implements Serializable {
         Map<Integer, Integer> displayNumberToId;
         Map<Integer, PIMInterface> copy = items;
         while (true){
-            System.out.println("\n\n");
+            //System.out.println("\n\n");
+            Utils.cls();
             if (!keywords.isEmpty()){
                 String keywordString = String.join(", ", keywords);
                 System.out.println("Applied Keywords: " + keywordString);
@@ -255,6 +261,7 @@ class Text extends PIMInterface implements Serializable {
             displayNumberToId = print(copy.values());
             System.out.println("1. Expand PIR by #");
             System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("0. Back to home");
             System.out.print("Choose an option: ");
             Scanner scanner = new Scanner(System.in);
             int cmd = scanner.nextInt();
@@ -265,28 +272,36 @@ class Text extends PIMInterface implements Serializable {
                 int displayNumber = scanner.nextInt();
                 int id = displayNumberToId.get(displayNumber);
                 Text text  = (Text) copy.get(id);
-                System.out.println("\n\n");
+                //System.out.println("\n\n");
+                Utils.cls();
                 System.out.println("<Title>");
                 PIMInterface.printWrappedText(text.getTitle(), 120);
                 System.out.println("<Content>");
                 PIMInterface.printWrappedText(text.getContent(), 120);
-                System.out.println("\n\n(1) Modify, (2) Delete, (3) Go Back");
+                Utils.cls();
+                System.out.println("(1) Modify, (2) Delete, (3) Go Back");
                 System.out.print("Choose an option: ");
                 scanner = new Scanner(System.in);
                 int option = scanner.nextInt();
                 if (option == 1){
-                    System.out.println("\n\n");
+                    //System.out.println("\n\n");
+                    Utils.cls();
                     scanner.nextLine();
                     System.out.print("Enter the modified title: ");
                     text.setTitle(scanner.nextLine());
                     System.out.print("Enter the modified content: ");
                     text.setContent(scanner.nextLine());
+                    Utils.cls();
                     System.out.println("PIR content modified successfully.");
+                    Utils.ptc();
                     return;
+
                 }
                 else if (option == 2){
                     items.remove(id);
+                    Utils.cls();
                     System.out.println("PIR content deleted successfully.");
+                    Utils.ptc();
                     return;
                 }
             }

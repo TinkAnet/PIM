@@ -10,15 +10,22 @@ public class Utils {
             String os = System.getProperty("os.name").toLowerCase();
 
             if (os.contains("win")) {
-                // 如果是 Windows 系统
+                // Windows
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
             } else {
-                // 如果是 Unix/Linux/Mac 系统
+                //  Unix/Linux/Mac
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
             }
         } catch (IOException | InterruptedException ex) {
             System.out.println("An error occurred while trying to clear the screen");
         }
+    }
+
+    public static void ptc() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("\nPress any key to continue...");
+        scanner.nextLine();
     }
 }

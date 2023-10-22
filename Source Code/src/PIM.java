@@ -32,6 +32,7 @@ class PIMKernel {
         System.out.println("2. Task");
         System.out.println("3. Event");
         System.out.println("4. Contact");
+        System.out.println("0. Back to home");
         /*System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
@@ -52,19 +53,22 @@ class PIMKernel {
             case 2: return "Task";
             case 3: return "Event";
             case 4: return "Contact";
+            case 0: return "home";
             default: System.out.println("Invalid choice. Please choose a valid option.");
         }
         return null;
     }
 
     public void create_PIR() {
-        System.out.println("\n\n");
+        //System.out.println("\n\n");
+        Utils.cls();
         System.out.println("Which information do you want to create?");
         String type = types();
         PIMInterface data = null;
         switch (type) {
             case "Text": data = new Text(); break;
             case "Task": data = new Task(); break;
+            case "home": return;
             default: break;
         }
         pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
@@ -76,7 +80,9 @@ class PIMKernel {
     }
 
     public void search_PIR() {
-        System.out.println("\n\n");
+        //System.out.println("\n\n");
+        Utils.cls();
+
         System.out.println("Which information do you want to search?");
         String type = types();
         if (pimItems.get(type) == null) {System.out.println("No data in the system."); return;}
@@ -121,10 +127,13 @@ class PIMKernel {
             out.writeObject(pimItems);
             out.flush();
             out.close();
-
+            Utils.cls();
             System.out.printf("PIRs exported to %s successfully",filename);
+            Utils.ptc();
         }catch(IOException e){
+            Utils.cls();
             System.out.printf("Failed to export: %s",e);
+            Utils.ptc();
         }
     }
 
@@ -152,10 +161,13 @@ class PIMKernel {
             }
 
             in.close();
-
+            Utils.cls();
             System.out.printf("PIRs loaded from %s successfully",filename);
+            Utils.ptc();
         }catch(Exception e){
+            Utils.cls();
             System.out.printf("Failed to load: %s",e);
+            Utils.ptc();
         }
     }
 
@@ -178,7 +190,7 @@ public class PIM {
         System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
-        System.out.print("\n\n");
+        //System.out.print("\n\n");
         Utils.cls();
         return choice;
     }
