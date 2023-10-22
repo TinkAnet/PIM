@@ -25,7 +25,7 @@ public class Utils {
     public static void ptc() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("\nPress any key to continue...");
+        System.out.println("\n\n[Press any key to continue...]");
         scanner.nextLine();
     }
 }

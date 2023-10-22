@@ -111,7 +111,7 @@ class Task extends PIMInterface implements Serializable {
         this.title = scanner.nextLine();
         System.out.print("Description: ");
         this.description = scanner.nextLine();
-        System.out.print("DueDate in format dd-MM-yyyy");
+        System.out.println("DueDate in format dd-MM-yyyy");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
         try {
@@ -128,6 +128,7 @@ class Task extends PIMInterface implements Serializable {
 
     public static void search(PIMKernel kernel){
         Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+        Utils.cls();
         System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
         String partitionLine = new String(new char[46]).replace('\0', '_');
         for (PIMInterface tuple : items.values()) {
@@ -139,6 +140,7 @@ class Task extends PIMInterface implements Serializable {
             System.out.println(partitionLine);
             System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
         }
+        Utils.ptc();
     }
 
     @Override
@@ -307,6 +309,7 @@ class Text extends PIMInterface implements Serializable {
             }
             else{ //cmd == 2
                 scanner.nextLine();
+                Utils.cls();
                 System.out.print("Enter Keyword: ");
                 String keyword = scanner.nextLine();
                 keywords.add(keyword);
