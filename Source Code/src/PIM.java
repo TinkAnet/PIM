@@ -4,6 +4,8 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
+
+
 class Tuple {
     private Object[] data;
     public Tuple(Object... data) {
@@ -30,9 +32,21 @@ class PIMKernel {
         System.out.println("2. Task");
         System.out.println("3. Event");
         System.out.println("4. Contact");
-        System.out.print("Choose an option:");
+        /*System.out.print("Choose an option:");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
+        */
+        Scanner scanner = new Scanner(System.in);
+        int choice = -1;
+        while (choice == -1) {
+            try {
+                System.out.print("Choose an option:");
+                choice = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine();
+            }
+        }
         switch (choice) {
             case 1: return "Text";
             case 2: return "Task";
@@ -57,6 +71,7 @@ class PIMKernel {
     }
 
     public void modify_PIR(PIMInterface pir) {
+
         // TODO: Implement this method
     }
 
@@ -143,6 +158,7 @@ class PIMKernel {
             System.out.printf("Failed to load: %s",e);
         }
     }
+
 }
 
 
@@ -151,7 +167,8 @@ public class PIM {
     private static PIMKernel kernel = new PIMKernel();
 
     private static int moves(){
-        System.out.println("\n\n");
+        //System.out.println("\n\n");
+        Utils.cls();
         System.out.println("[ Home Page ]");
         System.out.println("1. Create");
         System.out.println("2. Search (Modify & Delete)");
@@ -162,6 +179,7 @@ public class PIM {
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
         System.out.print("\n\n");
+        Utils.cls();
         return choice;
     }
     private static int home(){
