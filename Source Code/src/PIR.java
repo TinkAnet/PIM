@@ -126,21 +126,148 @@ class Task extends PIMInterface implements Serializable {
         Utils.ptc();
     }
 
+//    public static void search(PIMKernel kernel){
+//        Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+//        if(items.isEmpty()){
+//            System.out.println("No data");
+//            return;
+//        }
+//        System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
+//        String partitionLine = new String(new char[46]).replace('\0', '_');
+//        for (PIMInterface tuple : items.values()) {
+//            Task task = (Task) tuple;
+//            int id = (int) task.getID();
+//            String title = (String) task.getTitle();
+//            String description = (String) task.getDescription();
+//            Date date = (Date) task.getDueDate();
+//            System.out.println(partitionLine);
+//            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
+//        }
+//        Utils.ptc();
+//    }
+
+    public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
+        if (items.isEmpty()) {System.out.println("No data"); return null;}
+        else {
+            Map<Integer, Integer> displayNumberToId = new HashMap<>();
+            int displayNumber = 1;
+            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
+            String partitionLine = new String(new char[120]).replace('\0', '-');
+            for (PIMInterface tuple : items) {
+                Task task = (Task) tuple;
+                displayNumberToId.put(displayNumber, task.getID());
+                String title = (String) task.getTitle();
+                String description = (String) task.getDescription();
+                Date date = (Date) task.getDueDate();
+                //title = title.length() > 40 - 3 ? title.substring(0, 40 - 3) + "..." : title;
+                //content = content.length() > 70 - 3 ? content.substring(0, 70 - 3) + "..." : content;
+                System.out.printf(partitionLine + "%n|%-2d | %-40s | %-40s | %-70s|%n", displayNumber, title, description, date);
+                displayNumber++;
+            }
+            System.out.println(partitionLine);
+            return displayNumberToId;
+        }
+    }
+
+    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            Task task = (Task) item;
+            String title = task.getTitle();
+            String description = task.getDescription();
+            Date date = task.getDueDate();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
+            String DateToString = sdf.format(date);  // one special case for date type
+            if (title.toLowerCase().contains(keyword.toLowerCase()) || description.toLowerCase().contains(keyword.toLowerCase()) || DateToString.contains(keyword)) {
+                // If the title or content contains the keyword, add it to the filtered items
+                filteredItems.put(task.getID(), item);
+            }
+        }
+        return filteredItems;
+    }
+
     public static void search(PIMKernel kernel){
         Map<Integer, PIMInterface> items = kernel.getItems().get(type);
-        Utils.cls();
-        System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
-        String partitionLine = new String(new char[46]).replace('\0', '_');
-        for (PIMInterface tuple : items.values()) {
-            Task task = (Task) tuple;
-            int id = (int) task.getID();
-            String title = (String) task.getTitle();
-            String description = (String) task.getDescription();
-            Date date = (Date) task.getDueDate();
-            System.out.println(partitionLine);
-            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", id, title, description, date);
+        if (items.isEmpty()){
+            System.out.println("No data");
+            return;
         }
-        Utils.ptc();
+        List<String> keywords = new ArrayList<>();
+        Map<Integer, Integer> displayNumberToId;
+        Map<Integer, PIMInterface> copy = items;
+        while (true){
+            //System.out.println("\n\n");
+            Utils.cls();
+            if (!keywords.isEmpty()){
+                String keywordString = String.join(", ", keywords);
+                System.out.println("Applied Keywords: " + keywordString);
+            }
+            displayNumberToId = print(copy.values());
+            System.out.println("1. Expand PIR by #");
+            System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("0. Back to home");
+            System.out.print("Choose an option: ");
+            Scanner scanner = new Scanner(System.in);
+            int cmd = scanner.nextInt();
+            if (cmd == 0) break;
+
+            if (cmd == 1){
+                System.out.print("Enter #: ");
+                int displayNumber = scanner.nextInt();
+                int id = displayNumberToId.get(displayNumber);
+                Task task  = (Task) copy.get(id);
+                //System.out.println("\n\n");
+                Utils.cls();
+                System.out.println("<Title>");
+                PIMInterface.printWrappedText(task.getTitle(), 120);
+                System.out.println("<Description>");
+                PIMInterface.printWrappedText(task.getDescription(), 120);
+                System.out.println("<DueDate>");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
+                PIMInterface.printWrappedText(sdf.format(task.getDueDate()), 120);
+                Utils.cls();
+                System.out.println("(1) Modify, (2) Delete, (3) Go Back");
+                System.out.print("Choose an option: ");
+                scanner = new Scanner(System.in);
+                int option = scanner.nextInt();
+                if (option == 1){
+                    //System.out.println("\n\n");
+                    Utils.cls();
+                    scanner.nextLine();
+                    System.out.print("Enter the modified title: ");
+                    task.setTitle(scanner.nextLine());
+                    System.out.print("Enter the modified description: ");
+                    task.setDescription(scanner.nextLine());
+                    System.out.print("Enter the modified date: ");
+                    try {
+                        task.setDueDate(sdf.parse(scanner.nextLine()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                    }
+                    Utils.cls();
+                    System.out.println("PIR content modified successfully.");
+                    Utils.ptc();
+                    return;
+
+                }
+                else if (option == 2){
+                    items.remove(id);
+                    Utils.cls();
+                    System.out.println("PIR content deleted successfully.");
+                    Utils.ptc();
+                    return;
+                }
+            }
+            else{ //cmd == 2
+                scanner.nextLine();
+                Utils.cls();
+                System.out.print("Enter Keyword: ");
+                String keyword = scanner.nextLine();
+                keywords.add(keyword);
+                copy = filterByKeyword(copy.values(), keyword);
+            }
+        }
     }
 
     @Override
@@ -173,6 +300,10 @@ class Task extends PIMInterface implements Serializable {
 
     public Date getDueDate() {
         return dueDate;
+    }
+
+    public void setTitle(String title){
+        this.title = title;
     }
 
     public void setDueDate(Date dueDate) {
