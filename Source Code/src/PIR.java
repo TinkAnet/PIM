@@ -233,18 +233,29 @@ class Task extends PIMInterface implements Serializable {
                 if (option == 1){
                     //System.out.println("\n\n");
                     Utils.cls();
-                    scanner.nextLine();
-                    System.out.print("Enter the modified title: ");
-                    task.setTitle(scanner.nextLine());
-                    System.out.print("Enter the modified description: ");
-                    task.setDescription(scanner.nextLine());
-                    System.out.print("Enter the modified date: ");
-                    try {
-                        task.setDueDate(sdf.parse(scanner.nextLine()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                    scanner.nextLine();  // Consume the newline left from previous input
+                    System.out.print("Do you want to modify the title? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified title: ");
+                        task.setTitle(scanner.nextLine());
                     }
+
+                    System.out.print("Do you want to modify the description? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified description: ");
+                        task.setDescription(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the due date? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified date (dd-MM-yyyy): ");
+                        try {
+                            task.setDueDate(sdf.parse(scanner.nextLine()));
+                        } catch (ParseException e) {
+                            System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                        }
+                    }
+
                     Utils.cls();
                     System.out.println("PIR content modified successfully.");
                     Utils.ptc();
@@ -419,16 +430,25 @@ class Text extends PIMInterface implements Serializable {
                 if (option == 1){
                     //System.out.println("\n\n");
                     Utils.cls();
-                    scanner.nextLine();
-                    System.out.print("Enter the modified title: ");
-                    text.setTitle(scanner.nextLine());
-                    System.out.print("Enter the modified content: ");
-                    text.setContent(scanner.nextLine());
+
+                    scanner.nextLine();  // Consume the newline left from previous input
+
+                    System.out.print("Do you want to modify the title? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified title: ");
+                        text.setTitle(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the content? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified content: ");
+                        text.setContent(scanner.nextLine());
+                    }
+
                     Utils.cls();
                     System.out.println("PIR content modified successfully.");
                     Utils.ptc();
                     return;
-
                 }
                 else if (option == 2){
                     items.remove(id);
