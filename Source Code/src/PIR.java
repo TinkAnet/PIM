@@ -1,4 +1,7 @@
+import jdk.jshell.execution.Util;
+
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -37,21 +40,156 @@ class Contact extends PIMInterface implements Serializable {
     private static int nextId = 1;
     private String type = "Contact";
     private int ID;
-    private String name;
+    private String title;
     private String email;
     private String phoneNumber;
 
-    public Contact(Tuple data) {
-        Object[] dataArray = data.getData();
-        this.ID = (int) dataArray[0];
-        this.name = (String) dataArray[1];
-        this.email = (String) dataArray[2];
-        this.phoneNumber = (String) dataArray[3];
+    public Contact() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Name: ");
+        this.title = scanner.nextLine();
+        System.out.print("Email: ");
+        this.email = scanner.nextLine();
+        System.out.print("Phone number: ");
+        this.phoneNumber = scanner.nextLine();
+        System.out.println("The contact is successfully added to the system.\n");
+        this.ID = nextId++;
+        Utils.ptc();
     }
 
-    @Override
-    public String getTitle() {
-        return name; // 对于联系人，标题是名称
+    public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
+        if (items.isEmpty()) {System.out.println("No data"); return null;}
+        else {
+            Map<Integer, Integer> displayNumberToId = new HashMap<>();
+            int displayNumber = 1;
+            System.out.printf("%-2s | %-30s | %-45s | %-35s|%n", "ID", "Name", "Email","Phone number","");
+            String partitionLine = new String(new char[120]).replace('\0', '-');
+            for (PIMInterface tuple : items) {
+                Contact contact = (Contact) tuple;
+                displayNumberToId.put(displayNumber, contact.getID());
+                String name = contact.getTitle();
+                String email = contact.getEmail();
+                String phone_num = contact.getPhoneNumber();
+                name = name.length() > 30 - 3 ? name.substring(0, 20 - 3) + "..." : name;
+                email = email.length() > 45 - 3 ? email.substring(0, 70 - 3) + "..." : email;
+                phone_num = phone_num.length() > 35 - 3 ? phone_num.substring(0, 30 - 3) + "..." : phone_num;
+                System.out.printf(partitionLine + "%n|%-2d | %-30s | %-45s | %-35s|%n", displayNumber, name, email, phone_num,"");
+                displayNumber++;
+            }
+            System.out.println(partitionLine);
+            return displayNumberToId;
+        }
+    }
+
+    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            Contact contact = (Contact) item;
+            String name = contact.getTitle();
+            String email = contact.getEmail();
+            String phone_num = contact.getPhoneNumber();
+
+            if (name.toLowerCase().contains(keyword.toLowerCase()) || email.toLowerCase().contains(keyword.toLowerCase()) || phone_num.contains(keyword.toLowerCase())) {
+                // If the title or content contains the keyword, add it to the filtered items
+                filteredItems.put(contact.getID(), item);
+            }
+        }
+        return filteredItems;
+    }
+
+    public static void search(Map<Integer, PIMInterface> items){
+        if (items.isEmpty()){
+            System.out.println("No data");
+            return;
+        }
+        List<String> keywords = new ArrayList<>();
+        Map<Integer, Integer> displayNumberToId;
+        Map<Integer, PIMInterface> copy = items;
+
+        while(true){
+            Utils.cls();
+            if (!keywords.isEmpty()){
+                String keywordString = String.join(", ", keywords);
+                System.out.println("Applied Keywords: " + keywordString);
+            }
+            displayNumberToId = print(copy.values());
+            System.out.println("1. Expand PIR by #");
+            System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("0. Back to home");
+            System.out.print("Choose an option: ");
+            Scanner scanner = new Scanner(System.in);
+            int cmd = scanner.nextInt();
+            if (cmd == 0) break;
+
+            if (cmd == 1){
+                System.out.print("Enter #: ");
+                int displayNumber = scanner.nextInt();
+                assert displayNumberToId != null;
+                Integer id = displayNumberToId.get(displayNumber);
+
+                Contact contact = (Contact) copy.get(id);
+                Utils.cls();
+
+                System.out.println("<Name>");
+                PIMInterface.printWrappedText(contact.getTitle(), 120);
+                System.out.println("Email");
+                PIMInterface.printWrappedText(contact.getTitle(), 120);
+                System.out.println("Phone number");
+                PIMInterface.printWrappedText(contact.getTitle(), 120);
+                Utils.cls();
+
+                System.out.println("(1) Modify, (2) Delete, (3) Go Back");
+                System.out.print("Choose an option: ");
+                scanner = new Scanner(System.in);
+
+                int option = scanner.nextInt();
+                if (option == 1){
+                    //System.out.println("\n\n");
+                    Utils.cls();
+                    scanner.nextLine();  // Consume the newline left from previous input
+                    System.out.print("Do you want to modify the name? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified name: ");
+                        contact.setName(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the email? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified email: ");
+                        contact.setEmail(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the phone number? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified phone number: ");
+                        contact.setPhoneNumber(scanner.nextLine());
+                    }
+
+                    Utils.cls();
+                    System.out.println("PIR content modified successfully.");
+                    Utils.ptc();
+                    return;
+
+                }
+                else if (option == 2){
+                    items.remove(id);
+                    Utils.cls();
+                    System.out.println("PIR content deleted successfully.");
+                    Utils.ptc();
+                    return;
+                }
+                else{ //cmd == 2
+                    scanner.nextLine();
+                    Utils.cls();
+                    System.out.print("Enter Keyword: ");
+                    String keyword = scanner.nextLine();
+                    keywords.add(keyword);
+                    copy = filterByKeyword(copy.values(), keyword);
+                }
+            }
+        }
+
+
     }
 
     @Override
@@ -66,16 +204,17 @@ class Contact extends PIMInterface implements Serializable {
 
     @Override
     public Tuple getData() {
-        return new Tuple(ID, name, email, phoneNumber);
+        return new Tuple(ID, title, email, phoneNumber);
     }
 
     // 其他属性的 getters 和 setters
-    public String getName() {
-        return name;
+    @Override
+    public String getTitle() {
+        return title;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.title = name;
     }
 
     public String getEmail() {
@@ -105,6 +244,9 @@ class Task extends PIMInterface implements Serializable {
     private String title;
     private String description;
     private Date dueDate;
+    // Adjust format as necessary
+    private static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+
     public Task() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Title: ");
@@ -113,7 +255,6 @@ class Task extends PIMInterface implements Serializable {
         this.description = scanner.nextLine();
         System.out.println("DueDate in format dd-MM-yyyy");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
         try {
             this.dueDate = sdf.parse(scanner.nextLine());
         } catch (ParseException e) {
@@ -151,17 +292,18 @@ class Task extends PIMInterface implements Serializable {
         else {
             Map<Integer, Integer> displayNumberToId = new HashMap<>();
             int displayNumber = 1;
-            System.out.printf("%-2s | %-10s | %-30s | %-10s%n", "ID", "Title", "Description","DueDate");
+            System.out.printf("%-2s | %-20s | %-70s | %-20s|%n", "ID", "Title", "Description","DueDate");
             String partitionLine = new String(new char[120]).replace('\0', '-');
             for (PIMInterface tuple : items) {
                 Task task = (Task) tuple;
                 displayNumberToId.put(displayNumber, task.getID());
                 String title = (String) task.getTitle();
                 String description = (String) task.getDescription();
-                Date date = (Date) task.getDueDate();
-                //title = title.length() > 40 - 3 ? title.substring(0, 40 - 3) + "..." : title;
-                //content = content.length() > 70 - 3 ? content.substring(0, 70 - 3) + "..." : content;
-                System.out.printf(partitionLine + "%n|%-2d | %-40s | %-40s | %-70s|%n", displayNumber, title, description, date);
+                String date = sdf.format(task.getDueDate()).toString();
+                title = title.length() > 20 - 3 ? title.substring(0, 20 - 3) + "..." : title;
+                description = description.length() > 70 - 3 ? title.substring(0, 70 - 3) + "..." : title;
+                date = date.length() > 20 - 3 ? date.substring(0, 30 - 3) + "..." : date;
+                System.out.printf(partitionLine + "%n|%-2d | %-20s | %-70s | %-20s|%n", displayNumber, title, description, date);
                 displayNumber++;
             }
             System.out.println(partitionLine);
@@ -175,8 +317,7 @@ class Task extends PIMInterface implements Serializable {
             Task task = (Task) item;
             String title = task.getTitle();
             String description = task.getDescription();
-            Date date = task.getDueDate();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");  // Adjust format as necessary
+            Date date = task.getDueDate();// Adjust format as necessary
             String DateToString = sdf.format(date);  // one special case for date type
             if (title.toLowerCase().contains(keyword.toLowerCase()) || description.toLowerCase().contains(keyword.toLowerCase()) || DateToString.contains(keyword)) {
                 // If the title or content contains the keyword, add it to the filtered items
@@ -186,8 +327,7 @@ class Task extends PIMInterface implements Serializable {
         return filteredItems;
     }
 
-    public static void search(PIMKernel kernel){
-        Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+    public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
             System.out.println("No data");
             return;
@@ -386,8 +526,7 @@ class Text extends PIMInterface implements Serializable {
 
         return filteredItems;
     }
-    public static void search(PIMKernel kernel){
-        Map<Integer, PIMInterface> items = kernel.getItems().get(type);
+    public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
             System.out.println("No data");
             return;
@@ -512,15 +651,186 @@ class Event extends PIMInterface implements Serializable {
     private int ID;
     private String title;
     private String description;
-    private Date date;
+    private Date startingTime;
+    private Date alarm;
+    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
 
-    public Event(Tuple data) {
-        // 使用 data 初始化对象属性
-        Object[] dataArray = data.getData();
-        this.ID = (int) dataArray[0];
-        this.title = (String) dataArray[1];
-        this.description = (String) dataArray[2];
-        this.date = (Date) dataArray[3];
+    public Event() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Title: ");
+        this.title = scanner.nextLine();
+        System.out.print("Description: ");
+        this.description = scanner.nextLine();
+        System.out.print("Starting time in format HH:mm dd-MM-yyyy: ");
+
+        try {
+            this.startingTime = sdf.parse(scanner.nextLine());
+            System.out.print("Alarm in format HH:mm dd-MM-yyyy: ");
+            this.alarm = sdf.parse(scanner.nextLine());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            System.out.println("Invalid date format. Please enter the date in the format HH:mm dd-MM-yyyy.");
+        }
+        Utils.cls();
+        System.out.println("The event is successfully added to the system.\n");
+        this.ID = nextId++;
+        Utils.ptc();
+    }
+
+    public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
+        if (items.isEmpty()) {System.out.println("No data"); return null;}
+        else {
+            Map<Integer, Integer> displayNumberToId = new HashMap<>();
+            int displayNumber = 1;
+            System.out.printf("%-2s | %-10s | %-60s | %-20s | %-20s|%n", "ID", "Title", "Starting time","Alarm","");
+            String partitionLine = new String(new char[120]).replace('\0', '-');
+            for (PIMInterface tuple : items) {
+                Event event = (Event) tuple;
+                displayNumberToId.put(displayNumber, event.getID());
+                String title = (String) event.getTitle();
+                String description = (String) event.getDescription();
+                String startTime = sdf.format(event.getStartingTime()).toString();
+                String alarm = sdf.format(event.getAlarm()).toString();
+
+                title = title.length() > 20 - 3 ? title.substring(0, 20 - 3) + "..." : title;
+                description = description.length() > 70 - 3 ? title.substring(0, 70 - 3) + "..." : title;
+                startTime = startTime.length() > 20 - 3 ? startTime.substring(0, 30 - 3) + "..." : startTime;
+                alarm = alarm.length() > 20 - 3 ? alarm.substring(0, 30 - 3) + "..." : alarm;
+
+                System.out.printf(partitionLine + "%n|%-2d | %-10s | %-60s | %-20s | %-20s|%n", displayNumber, title, description, startTime, alarm,"");
+                displayNumber++;
+            }
+            System.out.println(partitionLine);
+            return displayNumberToId;
+        }
+    }
+
+    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            Event event = (Event) item;
+            String title = event.getTitle();
+            String description = event.getDescription();
+            String startTime = sdf.format(event.getStartingTime());// Adjust format as necessary
+            String alarm =  sdf.format(event.getAlarm());
+
+            if (title.toLowerCase().contains(keyword.toLowerCase()) || description.toLowerCase().contains(keyword.toLowerCase()) || startTime.toLowerCase().contains(keyword.toLowerCase()) || alarm.toLowerCase().contains(keyword.toLowerCase())) {
+                // If the title or content contains the keyword, add it to the filtered items
+                filteredItems.put(event.getID(), item);
+            }
+        }
+        return filteredItems;
+    }
+
+    public static void search(Map<Integer, PIMInterface> items){
+        if (items.isEmpty()){
+            System.out.println("No data");
+            return;
+        }
+        List<String> keywords = new ArrayList<>();
+        Map<Integer, Integer> displayNumberToId;
+        Map<Integer, PIMInterface> copy = items;
+        while (true){
+            //System.out.println("\n\n");
+            Utils.cls();
+            if (!keywords.isEmpty()){
+                String keywordString = String.join(", ", keywords);
+                System.out.println("Applied Keywords: " + keywordString);
+            }
+            displayNumberToId = print(copy.values());
+            System.out.println("1. Expand PIR by #");
+            System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("0. Back to home");
+            System.out.print("Choose an option: ");
+            Scanner scanner = new Scanner(System.in);
+            int cmd = scanner.nextInt();
+            if (cmd == 0) break;
+
+            if (cmd == 1){
+                System.out.print("Enter #: ");
+                int displayNumber = scanner.nextInt();
+                int id = displayNumberToId.get(displayNumber);
+                Event event  = (Event) copy.get(id);
+                //System.out.println("\n\n");
+                Utils.cls();
+                System.out.println("<Title>");
+                PIMInterface.printWrappedText(event.getTitle(), 120);
+                System.out.println("<Description>");
+                PIMInterface.printWrappedText(event.getDescription(), 120);
+                System.out.println("<Starting time>");
+                PIMInterface.printWrappedText(sdf.format(event.getStartingTime()), 120);
+                System.out.println("<Alarm>");
+                PIMInterface.printWrappedText(sdf.format(event.getAlarm()), 120);
+
+                Utils.cls();
+                System.out.println("(1) Modify, (2) Delete, (3) Go Back");
+                System.out.print("Choose an option: ");
+                scanner = new Scanner(System.in);
+                int option = scanner.nextInt();
+                if (option == 1){
+                    //System.out.println("\n\n");
+                    Utils.cls();
+                    scanner.nextLine();  // Consume the newline left from previous input
+                    System.out.print("Do you want to modify the title? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified title: ");
+                        event.setTitle(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the description? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified description: ");
+                        event.setDescription(scanner.nextLine());
+                    }
+
+                    System.out.print("Do you want to modify the starting time? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified date (HH:mm dd-MM-yyyy): ");
+                        try {
+                            event.setStartingTime(sdf.parse(scanner.nextLine()));
+                        } catch (ParseException e) {
+                            System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                        }
+                    }
+
+                    System.out.print("Do you want to modify the alarm? (Y/N): ");
+                    if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
+                        System.out.print("Enter the modified date (HH:mm dd-MM-yyyy): ");
+                        try {
+                            event.setAlarm(sdf.parse(scanner.nextLine()));
+                        } catch (ParseException e) {
+                            System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                        }
+                    }
+
+
+                    Utils.cls();
+                    System.out.println("PIR content modified successfully.");
+                    Utils.ptc();
+                    return;
+
+                }
+                else if (option == 2){
+                    items.remove(id);
+                    Utils.cls();
+                    System.out.println("PIR content deleted successfully.");
+                    Utils.ptc();
+                    return;
+                }
+            }
+            else{ //cmd == 2
+                scanner.nextLine();
+                Utils.cls();
+                System.out.print("Enter Keyword: ");
+                String keyword = scanner.nextLine();
+                keywords.add(keyword);
+                copy = filterByKeyword(copy.values(), keyword);
+            }
+        }
+    }
+
+    private void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
@@ -540,7 +850,7 @@ class Event extends PIMInterface implements Serializable {
 
     @Override
     public Tuple getData() {
-        return new Tuple(ID, title, description, date);
+        return new Tuple(ID, title, description, startingTime, alarm);
     }
 
     public String getDescription() {
@@ -551,13 +861,14 @@ class Event extends PIMInterface implements Serializable {
         this.description = description;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getStartingTime() {
+        return startingTime;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
+    public void setStartingTime(Date time) {this.startingTime = time;}
+    public Date getAlarm() {return alarm;}
+
+    public void setAlarm(Date alarm){this.alarm = alarm;}
 
     public static void setNextId(int nextId) {
         Event.nextId = nextId;

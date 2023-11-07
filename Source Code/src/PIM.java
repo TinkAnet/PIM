@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
 
-
 class Tuple {
     private Object[] data;
     public Tuple(Object... data) {
@@ -68,7 +67,9 @@ class PIMKernel {
         switch (type) {
             case "Text": data = new Text(); break;
             case "Task": data = new Task(); break;
-            case "home": return;
+            case "Event": data = new Event(); break;
+            case "Contact": data = new Contact(); break;
+            case "Home": return;
             default: break;
         }
         pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
@@ -85,35 +86,15 @@ class PIMKernel {
 
         System.out.println("Which information do you want to search?");
         String type = types();
-        if (pimItems.get(type) == null) {System.out.println("No data in the system."); return;}
+        if (pimItems.get(type) == null && !Objects.equals(type, "Home")) {System.out.println("No data in the system."); return;}
         switch (type) {
-            case "Text": Text.search(this); break;
-            case "Task": Task.search(this); break;
-            default:
+            case "Text": Text.search(pimItems.get("Text")); break;
+            case "Task": Task.search(pimItems.get("Task")); break;
+            case "Contact": Contact.search(pimItems.get("Contact")); break;
+            case "Event": Event.search(pimItems.get("Event")); break;
+            default: break;
         }
     }
-
-
-    /*public void delete_PIR(PIMInterface pir) {
-        String type = pir.getType();
-        int id = pir.getID();
-
-        List<PIMInterface> items = pimItems.get(type);
-        if (items != null) {
-            // delete PIM by iterator
-            Iterator<PIMInterface> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                if (iterator.next().getID() == id) {
-                    iterator.remove();
-                    System.out.println("Item deleted successfully.");
-                    return;
-                }
-            }
-        }
-        System.out.println("No item found with the given type and ID.");
-        // TODO: Implement this method
-    }*/
-
 
     public void export() {
         try{
