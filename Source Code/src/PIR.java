@@ -80,21 +80,6 @@ class Contact extends PIMInterface implements Serializable {
         }
     }
 
-    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
-        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
-        for (PIMInterface item : items) {
-            Contact contact = (Contact) item;
-            String name = contact.getTitle();
-            String email = contact.getEmail();
-            String phone_num = contact.getPhoneNumber();
-
-            if (name.toLowerCase().contains(keyword.toLowerCase()) || email.toLowerCase().contains(keyword.toLowerCase()) || phone_num.contains(keyword.toLowerCase())) {
-                // If the title or content contains the keyword, add it to the filtered items
-                filteredItems.put(contact.getID(), item);
-            }
-        }
-        return filteredItems;
-    }
 
     public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
@@ -344,6 +329,7 @@ class Task extends PIMInterface implements Serializable {
             displayNumberToId = print(copy.values());
             System.out.println("1. Expand PIR by #");
             System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("3. Search by Date");
             System.out.println("0. Back to home");
             System.out.print("Choose an option: ");
             Scanner scanner = new Scanner(System.in);
@@ -409,13 +395,27 @@ class Task extends PIMInterface implements Serializable {
                     return;
                 }
             }
-            else{ //cmd == 2
+            else if(cmd == 2){ //cmd == 2
                 scanner.nextLine();
                 Utils.cls();
                 System.out.print("Enter Keyword: ");
                 String keyword = scanner.nextLine();
                 keywords.add(keyword);
                 copy = filterByKeyword(copy.values(), keyword);
+            }else if(cmd == 3){
+                scanner.nextLine(); 
+                System.out.print("Enter the date (dd-MM-yyyy): ");
+                String inputDate = scanner.nextLine();
+                System.out.println("1. Equal\n2. After\n3. Before");
+                System.out.print("Choose an option: ");
+                int dateOption = scanner.nextInt();
+
+                try {
+                    Date searchDate = sdf.parse(inputDate);
+                    copy = filterByDueDate(copy.values(), searchDate, dateOption);
+                } catch (ParseException e) {
+                    System.out.println("Invalid date format. Please enter the date in the format dd-MM-yyyy.");
+                }
             }
         }
     }
@@ -462,6 +462,35 @@ class Task extends PIMInterface implements Serializable {
 
     public static void setNextId(int nextId) {
         Task.nextId = nextId;
+    }
+
+    public static Map<Integer, PIMInterface> filterByDueDate(Collection<PIMInterface> items, Date searchDate, int option) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            if (item instanceof Task) {
+                Task task = (Task) item;
+                Date dueDate = task.getDueDate();
+
+                switch (option) {
+                    case 1: // Equal
+                        if (dueDate.equals(searchDate)) {
+                            filteredItems.put(task.getID(), item);
+                        }
+                        break;
+                    case 2: // After
+                        if (dueDate.after(searchDate)) {
+                            filteredItems.put(task.getID(), item);
+                        }
+                        break;
+                    case 3: // Before
+                        if (dueDate.before(searchDate)) {
+                            filteredItems.put(task.getID(), item);
+                        }
+                        break;
+                }
+            }
+        }
+        return filteredItems;
     }
 }
 
@@ -626,7 +655,7 @@ class Text extends PIMInterface implements Serializable {
                     return;
                 }
             }
-            else{ //cmd == 2
+            else {  // cmd =2
                 scanner.nextLine();
                 Utils.cls();
 
@@ -919,4 +948,31 @@ class Event extends PIMInterface implements Serializable {
     public static void setNextId(int nextId) {
         Event.nextId = nextId;
     }
+
+    public static Map<Integer, PIMInterface> filterByDueDate(Collection<PIMInterface> items, Date searchDate, int option) {
+    Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+    for (PIMInterface item : items) {
+        Task task = (Task) item;
+        Date dueDate = task.getDueDate();
+
+        switch (option) {
+            case 1: // Equal
+                if (dueDate.equals(searchDate)) {
+                    filteredItems.put(task.getID(), item);
+                }
+                break;
+            case 2: // After
+                if (dueDate.after(searchDate)) {
+                    filteredItems.put(task.getID(), item);
+                }
+                break;
+            case 3: // Before
+                if (dueDate.before(searchDate)) {
+                    filteredItems.put(task.getID(), item);
+                }
+                break;
+        }
+    }
+    return filteredItems;
+}
 }
