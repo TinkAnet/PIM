@@ -1,7 +1,4 @@
-import jdk.jshell.execution.Util;
-
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -45,6 +42,7 @@ class Contact extends PIMInterface implements Serializable {
     private String phoneNumber;
 
     public Contact() {
+        Utils.cls();
         Scanner scanner = new Scanner(System.in);
         System.out.print("Name: ");
         this.title = scanner.nextLine();
@@ -52,6 +50,7 @@ class Contact extends PIMInterface implements Serializable {
         this.email = scanner.nextLine();
         System.out.print("Phone number: ");
         this.phoneNumber = scanner.nextLine();
+        Utils.cls();
         System.out.println("The contact is successfully added to the system.\n");
         this.ID = nextId++;
         Utils.ptc();
@@ -62,18 +61,18 @@ class Contact extends PIMInterface implements Serializable {
         else {
             Map<Integer, Integer> displayNumberToId = new HashMap<>();
             int displayNumber = 1;
-            System.out.printf("%-2s | %-30s | %-45s | %-35s|%n", "ID", "Name", "Email","Phone number","");
             String partitionLine = new String(new char[120]).replace('\0', '-');
+            System.out.printf(partitionLine + "%n|%-2s | %-30s| %-45s| %-34s|%n", "ID", "Name", "Email","Phone number");
             for (PIMInterface tuple : items) {
                 Contact contact = (Contact) tuple;
                 displayNumberToId.put(displayNumber, contact.getID());
                 String name = contact.getTitle();
                 String email = contact.getEmail();
                 String phone_num = contact.getPhoneNumber();
-                name = name.length() > 30 - 3 ? name.substring(0, 20 - 3) + "..." : name;
-                email = email.length() > 45 - 3 ? email.substring(0, 70 - 3) + "..." : email;
-                phone_num = phone_num.length() > 35 - 3 ? phone_num.substring(0, 30 - 3) + "..." : phone_num;
-                System.out.printf(partitionLine + "%n|%-2d | %-30s | %-45s | %-35s|%n", displayNumber, name, email, phone_num,"");
+                name = name.length() > 30 - 3 ? name.substring(0, 30 - 3) + "..." : name;
+                email = email.length() > 45 - 3 ? email.substring(0, 45 - 3) + "..." : email;
+                phone_num = phone_num.length() > 35 - 3 ? phone_num.substring(0, 35 - 3) + "..." : phone_num;
+                System.out.printf(partitionLine + "%n|%-2s | %-30s| %-45s| %-34s|%n", displayNumber, name, email, phone_num);
                 displayNumber++;
             }
             System.out.println(partitionLine);
@@ -510,36 +509,66 @@ class Text extends PIMInterface implements Serializable {
         }
     }
 
-    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
-        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+    public static Map<Integer, PIMInterface> UpdateByKeyword(Map<Integer, PIMInterface> copy, Map<Integer, PIMInterface> items ,String keyword, String mode) {
+        Map<Integer, PIMInterface> result = new HashMap<>();
 
-        for (PIMInterface item : items) {
-            Text text = (Text) item;
-            String title = text.getTitle();
-            String content = text.getContent();
+        if(mode.equals("and")){
+            for (PIMInterface item : copy.values()) {
+                Text text = (Text) item;
+                String title = text.getTitle();
+                String content = text.getContent();
 
-            if (title.toLowerCase().contains(keyword.toLowerCase()) || content.toLowerCase().contains(keyword.toLowerCase())) {
-                // If the title or content contains the keyword, add it to the filtered items
-                filteredItems.put(text.getID(), item);
+                if (title.toLowerCase().contains(keyword.toLowerCase()) || content.toLowerCase().contains(keyword.toLowerCase())) {
+                    // If the title or content contains the keyword, add it to the filtered items
+                    result.put(text.getID(), item);
+                }
+            }
+        }else if(mode.equals("or")){
+            for (PIMInterface item : copy.values()) {
+                Text text = (Text) item;
+                result.put(text.getID(), item);
+            }
+
+            for(PIMInterface item : items.values()){
+                Text text = (Text) item;
+                String title = text.getTitle();
+                String content = text.getContent();
+
+                if (title.toLowerCase().contains(keyword.toLowerCase()) || content.toLowerCase().contains(keyword.toLowerCase())) {
+                    // If the title or content contains the keyword, add it to the filtered items
+                    result.put(text.getID(), item);
+                }
+            }
+
+        }else if(mode.equals("not")){
+            for (PIMInterface item : copy.values()) {
+                Text text = (Text) item;
+                String title = text.getTitle();
+                String content = text.getContent();
+
+                if (!(title.toLowerCase().contains(keyword.toLowerCase()) || content.toLowerCase().contains(keyword.toLowerCase()))) {
+                    // If the title or content contains the keyword, add it to the filtered items
+                    result.put(text.getID(), item);
+                }
             }
         }
 
-        return filteredItems;
+        return result;
     }
     public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
             System.out.println("No data");
             return;
         }
-        List<String> keywords = new ArrayList<>();
+        List<String> expressionList = new ArrayList<>();
         Map<Integer, Integer> displayNumberToId;
         Map<Integer, PIMInterface> copy = items;
         while (true){
             //System.out.println("\n\n");
             Utils.cls();
-            if (!keywords.isEmpty()){
-                String keywordString = String.join(", ", keywords);
-                System.out.println("Applied Keywords: " + keywordString);
+            if (!expressionList.isEmpty()){
+                String expressionString = String.join(" ", expressionList);
+                System.out.println("Applied Keywords: " + expressionString);
             }
             displayNumberToId = print(copy.values());
             System.out.println("1. Expand PIR by #");
@@ -600,10 +629,27 @@ class Text extends PIMInterface implements Serializable {
             else{ //cmd == 2
                 scanner.nextLine();
                 Utils.cls();
+
                 System.out.print("Enter Keyword: ");
                 String keyword = scanner.nextLine();
-                keywords.add(keyword);
-                copy = filterByKeyword(copy.values(), keyword);
+
+                if(expressionList.isEmpty()){
+                    expressionList.add(String.format("\"%s\"",keyword));
+                    copy = UpdateByKeyword(copy, items, keyword,"and");
+
+                } else {
+                    System.out.println("Extend the keyword to the last one by:");
+                    System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
+                    switch (scanner.nextInt()){
+                        case 1: {expressionList.add("AND"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "and"); break;}
+                        case 2: {expressionList.add("OR"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "or"); break;}
+                        case 3: {expressionList.add("NOT"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "not"); break;}
+                        case 0: {break;}
+                        default: {System.out.println("Invalid Option");break;}
+                    }
+                }
+
+
             }
         }
     }
