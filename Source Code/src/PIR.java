@@ -728,7 +728,7 @@ class Event extends PIMInterface implements Serializable {
     private String description;
     private Date startingTime;
     private Date alarm;
-    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
+    //private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
 
     public Event() {
         Scanner scanner = new Scanner(System.in);
@@ -780,6 +780,8 @@ class Event extends PIMInterface implements Serializable {
         }
     }
 
+
+    
     public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
         Map<Integer, PIMInterface> filteredItems = new HashMap<>();
         for (PIMInterface item : items) {
@@ -797,6 +799,40 @@ class Event extends PIMInterface implements Serializable {
         return filteredItems;
     }
 
+    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
+
+    // 修改后的过滤方法
+    public static Map<Integer, PIMInterface> filterByDate(Collection<PIMInterface> items, Date searchDate, int option) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            if (item instanceof Event) {
+                Event event = (Event) item;
+                Date startingTime = event.getStartingTime();
+                Date alarmTime = event.getAlarm();
+
+                boolean matchesStartingTime = compareDates(startingTime, searchDate, option);
+                boolean matchesAlarmTime = compareDates(alarmTime, searchDate, option);
+
+                if (matchesStartingTime || matchesAlarmTime) {
+                    filteredItems.put(event.getID(), item);
+                }
+            }
+        }
+        return filteredItems;
+    }
+
+    private static boolean compareDates(Date eventDate, Date searchDate, int option) {
+        switch (option) {
+            case 1: // Equal
+                return eventDate.equals(searchDate);
+            case 2: // After
+                return eventDate.after(searchDate);
+            case 3: // Before
+                return eventDate.before(searchDate);
+            default:
+                return false;
+        }
+    }
     public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
             System.out.println("No data");
@@ -815,6 +851,7 @@ class Event extends PIMInterface implements Serializable {
             displayNumberToId = print(copy.values());
             System.out.println("1. Expand PIR by #");
             System.out.println("2. Narrow down the search by Keyword");
+            System.out.println("3. Search by date");
             System.out.println("0. Back to home");
             System.out.print("Choose an option: ");
             Scanner scanner = new Scanner(System.in);
@@ -893,14 +930,30 @@ class Event extends PIMInterface implements Serializable {
                     return;
                 }
             }
-            else{ //cmd == 2
+            else if(cmd == 2){ //cmd == 2
                 scanner.nextLine();
                 Utils.cls();
                 System.out.print("Enter Keyword: ");
                 String keyword = scanner.nextLine();
                 keywords.add(keyword);
                 copy = filterByKeyword(copy.values(), keyword);
+            }else if(cmd == 3) {
+            scanner.nextLine();
+            System.out.print("Enter the date (HH:mm dd-MM-yyyy): ");
+            String inputDate = scanner.nextLine();
+            System.out.println("1. Equal\n2. After\n3. Before");
+            System.out.print("Choose an option: ");
+            int dateOption = scanner.nextInt();
+
+            try {
+                Date searchDate = sdf.parse(inputDate);
+                Map<Integer, PIMInterface> filtered = filterByDate(items.values(), searchDate, dateOption);
+                // 显示过滤后的事件
+            } catch (ParseException e) {
+                System.out.println("Invalid date format. Please enter the date in the format HH:mm dd-MM-yyyy.");
             }
+        }
+
         }
     }
 
