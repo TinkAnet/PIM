@@ -53,11 +53,6 @@ class PIMKernel {
         pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
     }
 
-    public void modify_PIR(PIMInterface pir) {
-
-        // TODO: Implement this method
-    }
-
     public void search_PIR() {
         //System.out.println("\n\n");
         Utils.cls();
@@ -145,27 +140,22 @@ class PIMKernel {
         }
         String partitionLine = new String(new char[totalWidth]).replace('\0', '-');
         System.out.println(partitionLine);
-        // Print headers using the calculated format string
         System.out.printf("|%-2s |", "ID");
         for (String key : titles.keySet()) {
             System.out.printf(" %-" + titles.get(key) + "s |", key);
         }
-        System.out.println(); // New line after printing headers
+        System.out.println();
 
         int displayNumber = 1;
 
-        // Iterate through items and print information
         for (PIMInterface item : items) {
             System.out.println(partitionLine);
             String[] data = item.getData();
 
-            // Ensure data length matches the number of titles
             if (data.length != titles.size()) {
-                // Handle mismatched data length (e.g., log an error or skip the item)
                 continue;
             }
 
-            // Print the formatted information
             System.out.printf("|%-2s |", item.getID());
             int dataIndex = 0;
             for (String key : titles.keySet()) {
@@ -227,7 +217,7 @@ class PIMKernel {
                 int i = 0;
                 for (String key : titles.keySet()) {
                     System.out.printf("<%s>%n", key);
-                    System.out.printf("%s%n", data[i++]);
+                    System.out.printf("%s%n\n", data[i++]);
                 }
                 i = 0;
                 for (String key : titles.keySet()) {
@@ -256,7 +246,6 @@ class PIMKernel {
                 if(expressionList.isEmpty()){
                     expressionList.add(String.format("\"%s\"",keyword));
                     copy = UpdateByKeyword(copy, items, keyword,"and");
-
                 } else {
                     System.out.println("Extend the keyword to the last one by:");
                     System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
@@ -286,26 +275,35 @@ class PIMKernel {
             }
         }
     }
+    private static boolean match(PIMInterface item, String keyword) {
+        String[] data = item.getData();
+        for (String str : data) {
+            if (str.toLowerCase().contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
     private static Map<Integer, PIMInterface> UpdateByKeyword(Map<Integer, PIMInterface> current, Map<Integer, PIMInterface> all, String keyword, String mode) {
         Map<Integer, PIMInterface> result = new HashMap<>();
         keyword = keyword.toLowerCase();
 
         if (mode.equals("and")) {
             for (PIMInterface item : current.values()) {
-                if (item instanceof Contact && matchesContact((Contact) item, keyword)) {
+                if (match(item, keyword)) {
                     result.put(item.getID(), item);
                 }
             }
         } else if (mode.equals("or")) {
             result.putAll(current);
             for (PIMInterface item : all.values()) {
-                if (item instanceof Contact && !current.containsKey(item.getID()) && matchesContact((Contact) item, keyword)) {
+                if (!current.containsKey(item.getID()) && match(item, keyword)) {
                     result.put(item.getID(), item);
                 }
             }
         } else if (mode.equals("not")) {
             for (PIMInterface item : current.values()) {
-                if (item instanceof Contact && !matchesContact((Contact) item, keyword)) {
+                if (!match(item, keyword)) {
                     result.put(item.getID(), item);
                 }
             }
@@ -314,9 +312,10 @@ class PIMKernel {
         return result;
     }
     private static boolean matchesContact(Contact contact, String keyword) {
-        return contact.getName().toLowerCase().contains(keyword) ||
-                contact.getEmail().toLowerCase().contains(keyword) ||
-                contact.getPhoneNumber().contains(keyword);
+        String[] data = contact.getData();
+        return data[0].toLowerCase().contains(keyword) ||
+                data[1].toLowerCase().contains(keyword) ||
+                data[2].contains(keyword);
     }
     private static boolean compareDates(Date eventDate, Date searchDate, int option) {
         switch (option) {
@@ -335,15 +334,20 @@ class PIMKernel {
         Map<Integer, PIMInterface> filteredItems = new HashMap<>();
         for (PIMInterface item : items) {
             if (item instanceof Event) {
-                Event event = (Event) item;
-                Date startingTime = event.getStartingTime();
-                Date alarmTime = event.getAlarm();
-
+                String[] data = item.getData();
+                Date startingTime = null;
+                Date alarmTime = null;
+                try {
+                    startingTime = sdf.parse(data[2]);
+                    alarmTime = sdf.parse(data[3]);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 boolean matchesStartingTime = compareDates(startingTime, searchDate, option);
                 boolean matchesAlarmTime = compareDates(alarmTime, searchDate, option);
 
                 if (matchesStartingTime || matchesAlarmTime) {
-                    filteredItems.put(event.getID(), item);
+                    filteredItems.put(item.getID(), item);
                 }
             }
         }
