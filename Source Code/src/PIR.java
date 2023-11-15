@@ -8,6 +8,18 @@ abstract class PIMInterface {
 
     abstract Map<String, Integer> getTitles();
     abstract String[] getData();
+    public abstract boolean matchesKeyword(String keyword);
+
+    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+        for (PIMInterface item : items) {
+            if (item.matchesKeyword(keyword)) {
+                filteredItems.put(item.getID(), item);
+            }
+        }
+        return filteredItems;
+    }
+
 
     static void printWrappedText(String text, int lineLength) {
         String[] words = text.split(" ");
@@ -302,21 +314,7 @@ class Task extends PIMInterface implements Serializable {
         Utils.ptc();
     }
 
-    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
-        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
-        for (PIMInterface item : items) {
-            Task task = (Task) item;
-            String title = task.getTitle();
-            String description = task.getDescription();
-            Date date = task.getDueDate();// Adjust format as necessary
-            String DateToString = sdf.format(date);  // one special case for date type
-            if (title.toLowerCase().contains(keyword.toLowerCase()) || description.toLowerCase().contains(keyword.toLowerCase()) || DateToString.contains(keyword)) {
-                // If the title or content contains the keyword, add it to the filtered items
-                filteredItems.put(task.getID(), item);
-            }
-        }
-        return filteredItems;
-    }
+    
 
     public static void search(Map<Integer, PIMInterface> items){
         if (items.isEmpty()){
@@ -745,27 +743,8 @@ class Event extends PIMInterface implements Serializable {
     }
 
 
-    
-    public static Map<Integer, PIMInterface> filterByKeyword(Collection<PIMInterface> items, String keyword) {
-        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
-        for (PIMInterface item : items) {
-            Event event = (Event) item;
-            String title = event.getTitle();
-            String description = event.getDescription();
-            String startTime = sdf.format(event.getStartingTime());// Adjust format as necessary
-            String alarm =  sdf.format(event.getAlarm());
-
-            if (title.toLowerCase().contains(keyword.toLowerCase()) || description.toLowerCase().contains(keyword.toLowerCase()) || startTime.toLowerCase().contains(keyword.toLowerCase()) || alarm.toLowerCase().contains(keyword.toLowerCase())) {
-                // If the title or content contains the keyword, add it to the filtered items
-                filteredItems.put(event.getID(), item);
-            }
-        }
-        return filteredItems;
-    }
-
     private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
 
-    // 修改后的过滤方法
     public static Map<Integer, PIMInterface> filterByDate(Collection<PIMInterface> items, Date searchDate, int option) {
         Map<Integer, PIMInterface> filteredItems = new HashMap<>();
         for (PIMInterface item : items) {
