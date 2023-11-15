@@ -1,41 +1,18 @@
 import java.io.*;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 
-class Tuple {
-    private Object[] data;
-    public Tuple(Object... data) {
-        this.data = data;
-    }
-    public Object[] getData() {
-        return data;
-    }
-}
 
 // PIMKernel
 class PIMKernel {
     private Map<String, Map<Integer, PIMInterface>> pimItems;
-
-    public PIMKernel() {
-        pimItems = new HashMap<>();
-    }
-
-    public Map<String, Map<Integer, PIMInterface>> getItems(){
-        return pimItems;
-    }
+    public PIMKernel() {pimItems = new HashMap<>();}
     private static String types(){
         System.out.println("1. Text Note");
         System.out.println("2. Task");
         System.out.println("3. Event");
         System.out.println("4. Contact");
         System.out.println("0. Back to home");
-        /*System.out.print("Choose an option:");
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-        */
         Scanner scanner = new Scanner(System.in);
         int choice = -1;
         while (choice == -1) {
@@ -59,7 +36,6 @@ class PIMKernel {
     }
 
     public void create_PIR() {
-        //System.out.println("\n\n");
         Utils.cls();
         System.out.println("Which information do you want to create?");
         String type = types();
@@ -151,7 +127,64 @@ class PIMKernel {
             Utils.ptc();
         }
     }
+    public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
+        if (items.isEmpty()) {
+            System.out.println("No data");
+            return null;
+        }
 
+        Map<Integer, Integer> displayNumberToId = new HashMap<>();
+        PIMInterface firstItem = items.iterator().next();
+        Map<String, Integer> titles = firstItem.getTitles();
+
+        int totalWidth = 5;
+        for (int width : titles.values()) {
+            totalWidth += width + 3;
+        }
+        String partitionLine = new String(new char[totalWidth]).replace('\0', '-');
+        System.out.println(partitionLine);
+        // Print headers using the calculated format string
+        System.out.printf("|%-2s |", "ID");
+        for (String key : titles.keySet()) {
+            System.out.printf(" %-" + titles.get(key) + "s |", key);
+        }
+        System.out.println(); // New line after printing headers
+
+        int displayNumber = 1;
+
+        // Iterate through items and print information
+        for (PIMInterface item : items) {
+            System.out.println(partitionLine);
+            String[] data = item.getData();
+
+            // Ensure data length matches the number of titles
+            if (data.length != titles.size()) {
+                // Handle mismatched data length (e.g., log an error or skip the item)
+                continue;
+            }
+
+            // Print the formatted information
+            System.out.printf("|%-2s |", item.getID());
+            int dataIndex = 0;
+            for (String key : titles.keySet()) {
+                String content = data[dataIndex];
+                int space = titles.get(key);
+
+                if (content.length() > space) {
+                    content = content.substring(0, space - 3) + "..."; // Adjust length and add "..."
+                }
+
+                System.out.printf(" %-" + space + "s |", content);
+                dataIndex++;
+            }
+            System.out.println();
+
+            displayNumberToId.put(displayNumber, item.getID());
+            displayNumber++;
+        }
+        System.out.println(partitionLine);
+        return displayNumberToId;
+    }
 }
 
 
