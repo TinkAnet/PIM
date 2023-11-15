@@ -236,7 +236,7 @@ class PIMKernel {
                 Utils.ptc();
                 return;
             }
-            else if (cmd == 2){  // cmd =2
+            else if (cmd == 2){
                 scanner.nextLine();
                 Utils.cls();
 
@@ -268,7 +268,7 @@ class PIMKernel {
 
                 try {
                     Date searchDate = sdf.parse(inputDate);
-                    Map<Integer, PIMInterface> filtered = filterByDate(items.values(), searchDate, dateOption);
+                    copy = filterByDate(items.values(), searchDate, dateOption);
                 } catch (ParseException e) {
                     System.out.println("Invalid date format. Please enter the date in the format HH:mm dd-MM-yyyy.");
                 }
@@ -311,12 +311,6 @@ class PIMKernel {
 
         return result;
     }
-    private static boolean matchesContact(Contact contact, String keyword) {
-        String[] data = contact.getData();
-        return data[0].toLowerCase().contains(keyword) ||
-                data[1].toLowerCase().contains(keyword) ||
-                data[2].contains(keyword);
-    }
     private static boolean compareDates(Date eventDate, Date searchDate, int option) {
         switch (option) {
             case 1: // Equal
@@ -333,8 +327,8 @@ class PIMKernel {
     public static Map<Integer, PIMInterface> filterByDate(Collection<PIMInterface> items, Date searchDate, int option) {
         Map<Integer, PIMInterface> filteredItems = new HashMap<>();
         for (PIMInterface item : items) {
+            String[] data = item.getData();
             if (item instanceof Event) {
-                String[] data = item.getData();
                 Date startingTime = null;
                 Date alarmTime = null;
                 try {
@@ -349,6 +343,15 @@ class PIMKernel {
                 if (matchesStartingTime || matchesAlarmTime) {
                     filteredItems.put(item.getID(), item);
                 }
+            }
+            else{ //Task
+                Date dueDate = null;
+                try {
+                    dueDate = sdf.parse(data[2]);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if (compareDates(dueDate, searchDate, option)) filteredItems.put(item.getID(), item);
             }
         }
         return filteredItems;
