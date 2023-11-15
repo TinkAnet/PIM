@@ -82,31 +82,31 @@ class Contact extends PIMInterface implements Serializable {
 
 
     public static void search(Map<Integer, PIMInterface> items){
-        if (items.isEmpty()){
-            System.out.println("No data");
-            return;
+    if (items.isEmpty()){
+        System.out.println("No data");
+        return;
+    }
+    List<String> expressionList = new ArrayList<>();
+    Map<Integer, Integer> displayNumberToId;
+    Map<Integer, PIMInterface> copy = new HashMap<>(items); // 使用 items 的初始副本
+
+    while(true){
+        Utils.cls();
+        if (!expressionList.isEmpty()){
+            String expressionString = String.join(" ", expressionList);
+            System.out.println("Applied Keywords: " + expressionString);
         }
-        List<String> keywords = new ArrayList<>();
-        Map<Integer, Integer> displayNumberToId;
-        Map<Integer, PIMInterface> copy = items;
+        displayNumberToId = print(copy.values());
+        System.out.println("1. Expand PIR by #");
+        System.out.println("2. Narrow down the search by Keyword");
+        System.out.println("0. Back to home");
+        System.out.print("Choose an option: ");
+        Scanner scanner = new Scanner(System.in);
+        int cmd = scanner.nextInt();
+        if (cmd == 0) break;
 
-        while(true){
-            Utils.cls();
-            if (!keywords.isEmpty()){
-                String keywordString = String.join(", ", keywords);
-                System.out.println("Applied Keywords: " + keywordString);
-            }
-            displayNumberToId = print(copy.values());
-            System.out.println("1. Expand PIR by #");
-            System.out.println("2. Narrow down the search by Keyword");
-            System.out.println("0. Back to home");
-            System.out.print("Choose an option: ");
-            Scanner scanner = new Scanner(System.in);
-            int cmd = scanner.nextInt();
-            if (cmd == 0) break;
-
-            if (cmd == 1){
-                System.out.print("Enter #: ");
+        if (cmd == 1){
+            System.out.print("Enter #: ");
                 int displayNumber = scanner.nextInt();
                 assert displayNumberToId != null;
                 Integer id = displayNumberToId.get(displayNumber);
@@ -167,14 +167,82 @@ class Contact extends PIMInterface implements Serializable {
                     Utils.cls();
                     System.out.print("Enter Keyword: ");
                     String keyword = scanner.nextLine();
-                    keywords.add(keyword);
-                    copy = filterByKeyword(copy.values(), keyword);
+                    if (expressionList.isEmpty()) {
+                        expressionList.add(String.format("\"%s\"", keyword));
+                        copy = updateByKeyword(copy, items, keyword, "and");
+                    } else {
+                        System.out.println("Extend the keyword to the last one by:");
+                        System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
+                        int choice = scanner.nextInt();
+                        switch (choice) {
+                            case 1: expressionList.add("AND"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(copy, items, keyword, "and"); break;
+                            case 2: expressionList.add("OR"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(copy, items, keyword, "or"); break;
+                            case 3: expressionList.add("NOT"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(copy, items, keyword, "not"); break;
+                            case 0: break;
+                            default: System.out.println("Invalid Option"); break;
+                        }
+                    }
+                }
+        }
+        else if (cmd == 2){ // cmd == 2
+            scanner.nextLine();
+            Utils.cls();
+            System.out.print("Enter Keyword: ");
+            String keyword = scanner.nextLine();
+            if(expressionList.isEmpty()){
+                expressionList.add(String.format("\"%s\"", keyword));
+                copy = updateByKeyword(items, items, keyword, "and");
+            } else {
+                System.out.println("Extend the keyword to the last one by:");
+                System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // 读取回车符
+                switch (choice){
+                    case 1: expressionList.add("AND"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(copy, items, keyword, "and"); break;
+                    case 2: expressionList.add("OR"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(items, items, keyword, "or"); break;
+                    case 3: expressionList.add("NOT"); expressionList.add(String.format("\"%s\"", keyword)); copy = updateByKeyword(copy, items, keyword, "not"); break;
+                    case 0: break;
+                    default: System.out.println("Invalid Option"); break;
                 }
             }
         }
-
-
     }
+}
+
+
+        private static Map<Integer, PIMInterface> updateByKeyword(Map<Integer, PIMInterface> current, Map<Integer, PIMInterface> all, String keyword, String mode) {
+    Map<Integer, PIMInterface> result = new HashMap<>();
+    keyword = keyword.toLowerCase();
+
+    if (mode.equals("and")) {
+        for (PIMInterface item : current.values()) {
+            if (item instanceof Contact && matchesContact((Contact) item, keyword)) {
+                result.put(item.getID(), item);
+            }
+        }
+    } else if (mode.equals("or")) {
+        result.putAll(current);
+        for (PIMInterface item : all.values()) {
+            if (item instanceof Contact && !current.containsKey(item.getID()) && matchesContact((Contact) item, keyword)) {
+                result.put(item.getID(), item);
+            }
+        }
+    } else if (mode.equals("not")) {
+        for (PIMInterface item : current.values()) {
+            if (item instanceof Contact && !matchesContact((Contact) item, keyword)) {
+                result.put(item.getID(), item);
+            }
+        }
+    }
+
+    return result;
+}
+
+private static boolean matchesContact(Contact contact, String keyword) {
+    return contact.getTitle().toLowerCase().contains(keyword) || 
+           contact.getEmail().toLowerCase().contains(keyword) || 
+           contact.getPhoneNumber().contains(keyword);
+}
 
     @Override
     public int getID() {
