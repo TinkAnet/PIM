@@ -1,20 +1,22 @@
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-abstract class PIMInterface {
-    protected static int nextId = 1;
+abstract class PIMInterface implements Serializable{
     protected int ID;
     protected String[] data;
-    protected Map<String, Integer> TITLES;
+    protected Map<String, Integer> TITLES = new LinkedHashMap<>();
 
     public Map<String, Integer> getTitles() {return TITLES;}
     public String[] getData() {return data;}
     public void setData(String[] data) {this.data = data;}
-    public static void setNextId(int nextId) {PIMInterface.nextId = nextId;}
+    public static void setNextId(int nextId) {}
     public int getID() {return ID;}
 }
 
 class Contact extends PIMInterface implements Serializable {
+    protected static int nextId = 1;
     public Contact() {
         TITLES = new LinkedHashMap<>();
         TITLES.put("Name", 10);
@@ -23,6 +25,7 @@ class Contact extends PIMInterface implements Serializable {
 
         Utils.cls();
         Scanner scanner = new Scanner(System.in);
+        data = new String[3];
         System.out.print("Name: ");
         data[0] = scanner.nextLine();
         System.out.print("Email: ");
@@ -34,9 +37,13 @@ class Contact extends PIMInterface implements Serializable {
         this.ID = nextId++;
         Utils.ptc();
     }
+
+    public static void setNextId(int nextId) {Contact.nextId = nextId;}
 }
 
 class Task extends PIMInterface implements Serializable {
+    public static final String dateFormat = "yyyyMMdd";
+    protected static int nextId = 1;
     public Task() {
         TITLES = new LinkedHashMap<>();
         TITLES.put("Title", 20);
@@ -44,21 +51,34 @@ class Task extends PIMInterface implements Serializable {
         TITLES.put("DueDate", 19);
 
         Scanner scanner = new Scanner(System.in);
+        Utils.cls();
         data = new String[3];
         System.out.print("Title: ");
         data[0] = scanner.nextLine();
         System.out.print("Description: ");
         data[1] = scanner.nextLine();
-        System.out.println("DueDate in format dd-MM-yyyy");
-        data[2] = scanner.nextLine();
+        System.out.printf("DueDate in format %s: ",dateFormat);
+
+        Date dueDate;
+        try {
+            dueDate = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
+        } catch (ParseException e) {
+            System.out.println("Invalid Time format");
+            return;
+        }
+        data[2] = new SimpleDateFormat("yyyy-MM-dd").format(dueDate);
+
         Utils.cls();
         System.out.println("The task is successfully added to the system.\n");
         this.ID = nextId++;
         Utils.ptc();
     }
+
+    public static void setNextId(int nextId) {Task.nextId = nextId;}
 }
 
 class Text extends PIMInterface implements Serializable {
+    protected static int nextId = 1;
     public Text() {
         TITLES = new LinkedHashMap<>();
         TITLES.put("Title", 20);
@@ -76,9 +96,14 @@ class Text extends PIMInterface implements Serializable {
         this.ID = nextId++;
         Utils.ptc();
     }
+
+    public static void setNextId(int nextId) {Text.nextId = nextId;}
 }
 
 class Event extends PIMInterface implements Serializable {
+    public static final String dateFormat = "yyyyMMdd HHmm";
+    protected static int nextId = 1;
+
     public Event() {
         TITLES = new LinkedHashMap<>();
         TITLES.put("Title", 10);
@@ -86,20 +111,34 @@ class Event extends PIMInterface implements Serializable {
         TITLES.put("Starting Time", 19);
         TITLES.put("Alarm", 19);
 
+        Utils.cls();
         Scanner scanner = new Scanner(System.in);
         data = new String[4];
         System.out.print("Title: ");
         data[0] = scanner.nextLine();
         System.out.print("Description: ");
         data[1] = scanner.nextLine();
-        System.out.print("Starting time in format HH:mm dd-MM-yyyy: ");
-        data[2] = scanner.nextLine();
-        System.out.print("Alarm in format HH:mm dd-MM-yyyy: ");
-        data[3] = scanner.nextLine();
+
+        System.out.printf("Starting time in format %s: ", dateFormat);
+        Date alarm;
+        try {
+            Date startingTime = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
+            data[2] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startingTime);
+
+            System.out.printf("Alarm in format %s: ", dateFormat);
+            alarm = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
+        } catch (ParseException e) {
+            System.out.println("Invalid Time format");
+            return;
+        }
+
+        data[3] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(alarm);
 
         Utils.cls();
         System.out.println("The event is successfully added to the system.\n");
         this.ID = nextId++;
         Utils.ptc();
     }
+
+    public static void setNextId(int nextId) {Text.nextId = nextId;}
 }

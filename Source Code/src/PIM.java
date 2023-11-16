@@ -8,7 +8,7 @@ import java.util.*;
 // PIMKernel
 class PIMKernel {
     private Map<String, Map<Integer, PIMInterface>> pimItems;
-    public PIMKernel() {pimItems = new HashMap<>();}
+    public PIMKernel() {pimItems = new LinkedHashMap<>();}
     private static String types(){
         System.out.println("1. Text Note");
         System.out.println("2. Task");
@@ -27,12 +27,12 @@ class PIMKernel {
             }
         }
         switch (choice) {
-            case 1: return "Text";
-            case 2: return "Task";
-            case 3: return "Event";
-            case 4: return "Contact";
-            case 0: return "home";
-            default: System.out.println("Invalid choice. Please choose a valid option.");
+            case 1 -> {return "Text";}
+            case 2 -> {return "Task";}
+            case 3 -> {return "Event";}
+            case 4 -> {return "Contact";}
+            case 0 -> {return "home";}
+            default -> System.out.println("Invalid choice. Please choose a valid option.");
         }
         return null;
     }
@@ -42,15 +42,22 @@ class PIMKernel {
         System.out.println("Which information do you want to create?");
         String type = types();
         PIMInterface data = null;
-        switch (type) {
-            case "Text": data = new Text(); break;
-            case "Task": data = new Task(); break;
-            case "Event": data = new Event(); break;
-            case "Contact": data = new Contact(); break;
-            case "Home": return;
-            default: break;
+        if (type != null) {
+            switch (type) {
+                case "Text" -> data = new Text();
+                case "Task" -> data = new Task();
+                case "Event" -> data = new Event();
+                case "Contact" -> data = new Contact();
+                case "Home" -> {
+                    return;
+                }
+                default -> {
+                }
+            }
         }
-        pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
+        if (data != null) {
+            pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
+        }
     }
 
     public void search_PIR() {
@@ -60,12 +67,15 @@ class PIMKernel {
         System.out.println("Which information do you want to search?");
         String type = types();
         if (pimItems.get(type) == null && !Objects.equals(type, "Home")) {System.out.println("No data in the system."); return;}
-        switch (type) {
-            case "Text": search(pimItems.get("Text")); break;
-            case "Task": search(pimItems.get("Task")); break;
-            case "Contact": search(pimItems.get("Contact")); break;
-            case "Event": search(pimItems.get("Event")); break;
-            default: break;
+        if (type != null) {
+            switch (type) {
+                case "Text" -> search(pimItems.get("Text"));
+                case "Task" -> search(pimItems.get("Task"));
+                case "Contact" -> search(pimItems.get("Contact"));
+                case "Event" -> search(pimItems.get("Event"));
+                default -> {
+                }
+            }
         }
     }
 
@@ -102,13 +112,13 @@ class PIMKernel {
             pimItems = (Map<String, Map<Integer, PIMInterface>>) in.readObject();
 
             if(pimItems.containsKey("Text")){
-                PIMInterface.setNextId(pimItems.get("Text").size()+1);
+                Text.setNextId(pimItems.get("Text").size()+1);
             }
             if(pimItems.containsKey("Task")){
-                PIMInterface.setNextId(pimItems.get("Task").size()+1);
+                Task.setNextId(pimItems.get("Task").size()+1);
             }
             if(pimItems.containsKey("Contact")){
-                PIMInterface.setNextId(pimItems.get("Contact").size()+1);
+                Contact.setNextId(pimItems.get("Contact").size()+1);
             }
             if(pimItems.containsKey("Event")){
                 Event.setNextId(pimItems.get("Event").size()+1);
@@ -187,7 +197,8 @@ class PIMKernel {
         Map<Integer, Integer> displayNumberToId;
         Map<Integer, PIMInterface> copy = items;
         PIMInterface firstItem = items.values().iterator().next();
-        boolean flag = firstItem instanceof Task || firstItem instanceof Event;
+
+        int task_event_flag = firstItem instanceof Task ? 1 : (firstItem instanceof Event ? 2 : 0);
 
         while (true){
             Utils.cls();
@@ -195,12 +206,15 @@ class PIMKernel {
                 String expressionString = String.join(" ", expressionList);
                 System.out.println("Applied Keywords: " + expressionString);
             }
+
             displayNumberToId = PIMKernel.print(copy.values());
             System.out.println("1. Expand PIR by #");
             System.out.println("2. Narrow down the search by Keyword");
-            if (flag) {System.out.println("3. Search by Date");}
+            if (task_event_flag == 1) {System.out.println("3. Search by DueDate");}
+            else if(task_event_flag == 2) {System.out.println("3. Search by Starting Time\n4. Search by Alarm");}
             System.out.println("0. Back to home");
             System.out.print("Choose an option: ");
+
             Scanner scanner = new Scanner(System.in);
             int cmd = scanner.nextInt();
             if (cmd == 0) break;
@@ -208,8 +222,11 @@ class PIMKernel {
             if (cmd == 1) {
                 System.out.print("Enter #: ");
                 int displayNumber = scanner.nextInt();
-                int id = displayNumberToId.get(displayNumber);
-                PIMInterface selectedItem = copy.get(id);
+//                int id = 0;
+//                if (displayNumberToId != null) {
+//                    id = displayNumberToId.get(displayNumber);
+//                }
+                PIMInterface selectedItem = copy.get(displayNumber);
 
                 Utils.cls();
                 Map<String, Integer> titles = selectedItem.getTitles();
@@ -249,32 +266,79 @@ class PIMKernel {
                 } else {
                     System.out.println("Extend the keyword to the last one by:");
                     System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
-                    switch (scanner.nextInt()){
-                        case 1: {expressionList.add("AND"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "and"); break;}
-                        case 2: {expressionList.add("OR"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "or"); break;}
-                        case 3: {expressionList.add("NOT"); expressionList.add(String.format("\"%s\"",keyword)); copy = UpdateByKeyword(copy, items, keyword, "not"); break;}
-                        case 0: {break;}
-                        default: {System.out.println("Invalid Option");break;}
+                    switch (scanner.nextInt()) {
+                        case 1 -> {
+                            expressionList.add("AND");
+                            expressionList.add(String.format("\"%s\"", keyword));
+                            copy = UpdateByKeyword(copy, items, keyword, "and");
+                        }
+                        case 2 -> {
+                            expressionList.add("OR");
+                            expressionList.add(String.format("\"%s\"", keyword));
+                            copy = UpdateByKeyword(copy, items, keyword, "or");
+                        }
+                        case 3 -> {
+                            expressionList.add("NOT");
+                            expressionList.add(String.format("\"%s\"", keyword));
+                            copy = UpdateByKeyword(copy, items, keyword, "not");
+                        }
+                        case 0 -> {
+                        }
+                        default -> {
+                            System.out.println("Invalid Option");
+                        }
                     }
                 }
             }
-            else if (cmd == 3){
-                scanner.nextLine();
-                System.out.print("Enter the date (HH:mm dd-MM-yyyy): ");
-                String inputDate = scanner.nextLine();
-                System.out.println("1. Equal\n2. After\n3. Before");
-                System.out.print("Choose an option: ");
-                int dateOption = scanner.nextInt();
+            else if (cmd == 3 && task_event_flag > 0){
+                copy = searchByDateTime(copy, task_event_flag, 3);
 
-                try {
-                    Date searchDate = sdf.parse(inputDate);
-                    copy = filterByDate(items.values(), searchDate, dateOption);
-                } catch (ParseException e) {
-                    System.out.println("Invalid date format. Please enter the date in the format HH:mm dd-MM-yyyy.");
-                }
+            }else if(cmd == 4 && task_event_flag == 2){
+                copy = searchByDateTime(copy, task_event_flag, 4);
             }
         }
     }
+    private static Map<Integer, PIMInterface> searchByDateTime(Map<Integer, PIMInterface> items, int task_event_flag, int searchOption) {
+        Scanner scanner = new Scanner(System.in);
+        String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
+
+        System.out.printf("Enter the date by %s: ", DatePattern);
+        String inputDate = scanner.nextLine();
+        System.out.println("1. Equal\n2. After\n3. Before");
+        System.out.print("Choose an option: ");
+        int dateOption = scanner.nextInt();
+        Date searchDate = null;
+
+        try {
+            searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
+        } catch (ParseException e) {
+            System.out.printf("Invalid date format. Please enter the date in the format %s.\n",DatePattern);
+        }
+        return updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm" , searchDate, dateOption, searchOption);
+    }
+
+    public static Map<Integer, PIMInterface> updateByDate(Map<Integer, PIMInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
+        //if searchOption == 3, it means search by due date/starting time, otherwise search by alarm
+        if (searchDate == null) {
+            System.out.println("Invalid time: search date is null");
+            return current;
+        }
+        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
+
+        for (PIMInterface item : current.values()) {
+            String[] data = item.getData();
+            Date dueDate = null;
+            try {
+                dueDate = new SimpleDateFormat(DatePattern).parse(data[searchOption == 3 ? 2 : 3]);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if (compareDates(dueDate, searchDate, dateOption)) filteredItems.put(item.getID(), item);
+
+        }
+        return filteredItems;
+    }
+
     private static boolean match(PIMInterface item, String keyword) {
         String[] data = item.getData();
         for (String str : data) {
@@ -288,23 +352,27 @@ class PIMKernel {
         Map<Integer, PIMInterface> result = new HashMap<>();
         keyword = keyword.toLowerCase();
 
-        if (mode.equals("and")) {
-            for (PIMInterface item : current.values()) {
-                if (match(item, keyword)) {
-                    result.put(item.getID(), item);
+        switch (mode) {
+            case "and" -> {
+                for (PIMInterface item : current.values()) {
+                    if (match(item, keyword)) {
+                        result.put(item.getID(), item);
+                    }
                 }
             }
-        } else if (mode.equals("or")) {
-            result.putAll(current);
-            for (PIMInterface item : all.values()) {
-                if (!current.containsKey(item.getID()) && match(item, keyword)) {
-                    result.put(item.getID(), item);
+            case "or" -> {
+                result.putAll(current);
+                for (PIMInterface item : all.values()) {
+                    if (!current.containsKey(item.getID()) && match(item, keyword)) {
+                        result.put(item.getID(), item);
+                    }
                 }
             }
-        } else if (mode.equals("not")) {
-            for (PIMInterface item : current.values()) {
-                if (!match(item, keyword)) {
-                    result.put(item.getID(), item);
+            case "not" -> {
+                for (PIMInterface item : current.values()) {
+                    if (!match(item, keyword)) {
+                        result.put(item.getID(), item);
+                    }
                 }
             }
         }
@@ -312,56 +380,22 @@ class PIMKernel {
         return result;
     }
     private static boolean compareDates(Date eventDate, Date searchDate, int option) {
-        switch (option) {
-            case 1: // Equal
-                return eventDate.equals(searchDate);
-            case 2: // After
-                return eventDate.after(searchDate);
-            case 3: // Before
-                return eventDate.before(searchDate);
-            default:
-                return false;
-        }
-    }
-    private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
-    public static Map<Integer, PIMInterface> filterByDate(Collection<PIMInterface> items, Date searchDate, int option) {
-        Map<Integer, PIMInterface> filteredItems = new HashMap<>();
-        for (PIMInterface item : items) {
-            String[] data = item.getData();
-            if (item instanceof Event) {
-                Date startingTime = null;
-                Date alarmTime = null;
-                try {
-                    startingTime = sdf.parse(data[2]);
-                    alarmTime = sdf.parse(data[3]);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                boolean matchesStartingTime = compareDates(startingTime, searchDate, option);
-                boolean matchesAlarmTime = compareDates(alarmTime, searchDate, option);
-
-                if (matchesStartingTime || matchesAlarmTime) {
-                    filteredItems.put(item.getID(), item);
-                }
-            }
-            else{ //Task
-                Date dueDate = null;
-                try {
-                    dueDate = sdf.parse(data[2]);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                if (compareDates(dueDate, searchDate, option)) filteredItems.put(item.getID(), item);
-            }
-        }
-        return filteredItems;
+        return switch (option) {
+            case 1 -> // Equal
+                    eventDate.equals(searchDate);
+            case 2 -> // After
+                    eventDate.after(searchDate);
+            case 3 -> // Before
+                    eventDate.before(searchDate);
+            default -> false;
+        };
     }
 }
 
 
 public class PIM {
 
-    private static PIMKernel kernel = new PIMKernel();
+    private static final PIMKernel kernel = new PIMKernel();
 
     private static int moves(){
         //System.out.println("\n\n");
@@ -381,31 +415,17 @@ public class PIM {
     }
     private static int home(){
         int choice = moves();
-        String type;
+
         switch (choice) {
-            case 1: kernel.create_PIR(); break;
-            case 2: kernel.search_PIR(); break;
-            case 3: kernel.export(); break;
-            case 4: kernel.load(); break;
-            case 5:
+            case 1 -> kernel.create_PIR();
+            case 2 -> kernel.search_PIR();
+            case 3 -> kernel.export();
+            case 4 -> kernel.load();
+            case 5 -> {
                 System.out.println("System Ended.");
                 return -1;
-            /*case 4:
-                System.out.println("Which information do you want to delete?");
-                type = types();
-                System.out.println("Please provide the ID of the item you want to delete:");
-                int idToDelete = new Scanner(System.in).nextInt();
-
-                List<PIMInterface> itemsOfType = kernel.search_PIR(type);
-                for (PIMInterface item : itemsOfType) {
-                    if (item.getID() == idToDelete) {
-                        kernel.delete_PIR(item);
-                        break;
-                    }
-                }
-                break;*/
-            default:
-                System.out.println("Invalid choice. Please choose a valid option.");
+            }
+            default -> System.out.println("Invalid choice. Please choose a valid option.");
         }
 
         return 1;
@@ -416,8 +436,6 @@ public class PIM {
         while(cmd != -1){
             cmd = home();
         }
-        //Tuple textData = new Tuple(1, "Sample Title", "This is a sample content.");
-        //PIMInterface text = kernel.create_PIR("Text", textData);
 
     }
 }
