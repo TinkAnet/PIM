@@ -102,13 +102,13 @@ class PIMKernel {
             pimItems = (Map<String, Map<Integer, PIMInterface>>) in.readObject();
 
             if(pimItems.containsKey("Text")){
-                Text.setNextId(pimItems.get("Text").size()+1);
+                PIMInterface.setNextId(pimItems.get("Text").size()+1);
             }
             if(pimItems.containsKey("Task")){
-                Task.setNextId(pimItems.get("Task").size()+1);
+                PIMInterface.setNextId(pimItems.get("Task").size()+1);
             }
             if(pimItems.containsKey("Contact")){
-                Contact.setNextId(pimItems.get("Contact").size()+1);
+                PIMInterface.setNextId(pimItems.get("Contact").size()+1);
             }
             if(pimItems.containsKey("Event")){
                 Event.setNextId(pimItems.get("Event").size()+1);
