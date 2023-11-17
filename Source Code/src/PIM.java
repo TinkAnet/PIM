@@ -63,9 +63,15 @@ class PIMKernel {
     public void search_PIR() {
         //System.out.println("\n\n");
         Utils.cls();
-
         System.out.println("Which information do you want to search?");
         String type = types();
+        boolean hasItems = pimItems.values().stream().anyMatch(map -> !map.isEmpty());
+    if (!hasItems) {
+        Utils.cls();
+        System.out.println("No items available to search. Please create an item first.");
+        Utils.ptc();
+        return; // Return early as there's nothing to search
+    }
         if (pimItems.get(type) == null && !Objects.equals(type, "Home")) {System.out.println("No data in the system."); return;}
         if (type != null) {
             switch (type) {
@@ -126,11 +132,20 @@ class PIMKernel {
             Utils.cls();
             System.out.printf("PIRs loaded from %s successfully",filename);
             Utils.ptc();
-        }catch(Exception e){
-            Utils.cls();
-            System.out.printf("Failed to load: %s",e);
-            Utils.ptc();
-        }
+        }catch (FileNotFoundException e) {
+        System.out.println("File not found: " + e.getMessage());
+        Utils.ptc();
+    } catch (IOException e) {
+        System.out.println("I/O error: " + e.getMessage());
+        Utils.ptc();
+    } catch (ClassNotFoundException e) {
+        System.out.println("Class not found: " + e.getMessage());
+        Utils.ptc();
+    } catch (Exception e) {
+        System.out.println("An unexpected error occurred: " + e.getMessage());
+        Utils.ptc();
+    }
+        
     }
     public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
         if (items.isEmpty()) {
@@ -215,6 +230,7 @@ class PIMKernel {
 
             Scanner scanner = new Scanner(System.in);
             int cmd = scanner.nextInt();
+            
             if (cmd == 0) break;
 
             if (cmd == 1) {
@@ -300,7 +316,7 @@ class PIMKernel {
         System.out.print("Choose an option: ");
         int dateOption = scanner.nextInt();
         Date searchDate = null;
-
+            
         try {
             searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
         } catch (ParseException e) {
@@ -440,6 +456,8 @@ public class PIM {
         while(cmd != -1){
             cmd = home();
         }
+
+        
 
     }
 }
