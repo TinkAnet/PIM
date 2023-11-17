@@ -98,11 +98,10 @@ class PIMKernel {
             Utils.cls();
             System.out.printf("Failed to export: %s",e);
             Utils.ptc();
-        }
+        } 
     }
 
     public void load() {
-        // TODO: Implement this method
         try{
             System.out.println("Enter the filename to be load from: ");
             Scanner scanner = new Scanner(System.in);
@@ -222,10 +221,6 @@ class PIMKernel {
             if (cmd == 1) {
                 System.out.print("Enter #: ");
                 int displayNumber = scanner.nextInt();
-//                int id = 0;
-//                if (displayNumberToId != null) {
-//                    id = displayNumberToId.get(displayNumber);
-//                }
                 PIMInterface selectedItem = copy.get(displayNumber);
 
                 Utils.cls();
@@ -318,7 +313,6 @@ class PIMKernel {
     }
 
     public static Map<Integer, PIMInterface> updateByDate(Map<Integer, PIMInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
-        //if searchOption == 3, it means search by due date/starting time, otherwise search by alarm
         if (searchDate == null) {
             System.out.println("Invalid time: search date is null");
             return current;
@@ -397,8 +391,7 @@ public class PIM {
 
     private static final PIMKernel kernel = new PIMKernel();
 
-    private static int moves(){
-        //System.out.println("\n\n");
+    private static int moves() {
         Utils.cls();
         System.out.println("[ Home Page ]");
         System.out.println("1. Create");
@@ -406,13 +399,27 @@ public class PIM {
         System.out.println("3. Export");
         System.out.println("4. Load");
         System.out.println("5. Exit the System");
-        System.out.print("Choose an option:");
+    
         Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-        //System.out.print("\n\n");
+        int choice = -1;
+    
+        while (choice < 1 || choice > 5) {
+            System.out.print("Choose an option: ");
+            try {
+                choice = scanner.nextInt();
+                if (choice < 1 || choice > 5) {
+                    System.out.println("Invalid choice. Please choose a valid option between 1 and 5.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // clear the buffer
+            }
+        }
+    
         Utils.cls();
         return choice;
     }
+    
     private static int home(){
         int choice = moves();
 
