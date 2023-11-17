@@ -31,7 +31,8 @@ class PIMKernel {
             case 3 -> {return "Event";}
             case 4 -> {return "Contact";}
             case 0 -> {return "home";}
-            default -> System.out.println("Invalid choice. Please choose a valid option.");
+            default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
+            
         }
         return null;
     }
@@ -50,8 +51,7 @@ class PIMKernel {
                 case "Home" -> {
                     return;
                 }
-                default -> {
-                }
+                default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
             }
         }
         if (data != null) {
@@ -62,9 +62,15 @@ class PIMKernel {
     public void search_PIR() {
         //System.out.println("\n\n");
         Utils.cls();
-
         System.out.println("Which information do you want to search?");
         String type = types();
+        boolean hasItems = pimItems.values().stream().anyMatch(map -> !map.isEmpty());
+    if (!hasItems) {
+        Utils.cls();
+        System.out.println("No items available to search. Please create an item first.");
+        Utils.ptc();
+        return; // Return early as there's nothing to search
+    }
         if (pimItems.get(type) == null && !Objects.equals(type, "Home")) {System.out.println("No data in the system."); return;}
         if (type != null) {
             switch (type) {
@@ -72,8 +78,7 @@ class PIMKernel {
                 case "Task" -> search(pimItems.get("Task"));
                 case "Contact" -> search(pimItems.get("Contact"));
                 case "Event" -> search(pimItems.get("Event"));
-                default -> {
-                }
+                default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
             }
         }
     }
@@ -126,11 +131,20 @@ class PIMKernel {
             Utils.cls();
             System.out.printf("PIRs loaded from %s successfully",filename);
             Utils.ptc();
-        }catch(Exception e){
-            Utils.cls();
-            System.out.printf("Failed to load: %s",e);
-            Utils.ptc();
-        }
+        }catch (FileNotFoundException e) {
+        System.out.println("File not found: " + e.getMessage());
+        Utils.ptc();
+    } catch (IOException e) {
+        System.out.println("I/O error: " + e.getMessage());
+        Utils.ptc();
+    } catch (ClassNotFoundException e) {
+        System.out.println("Class not found: " + e.getMessage());
+        Utils.ptc();
+    } catch (Exception e) {
+        System.out.println("An unexpected error occurred: " + e.getMessage());
+        Utils.ptc();
+    }
+        
     }
     public static Map<Integer, Integer> print(Collection<PIMInterface> items) {
         if (items.isEmpty()) {
@@ -215,6 +229,7 @@ class PIMKernel {
 
             Scanner scanner = new Scanner(System.in);
             int cmd = scanner.nextInt();
+            
             if (cmd == 0) break;
 
             if (cmd == 1) {
@@ -278,9 +293,7 @@ class PIMKernel {
                         }
                         case 0 -> {
                         }
-                        default -> {
-                            System.out.println("Invalid Option");
-                        }
+                        default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
                     }
                 }
             }
@@ -293,23 +306,36 @@ class PIMKernel {
         }
     }
     private static Map<Integer, PIMInterface> searchByDateTime(Map<Integer, PIMInterface> items, int task_event_flag, int searchOption) {
-        Scanner scanner = new Scanner(System.in);
-        String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
+    Scanner scanner = new Scanner(System.in);
+    String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
+    Date searchDate = null;
 
-        System.out.printf("Enter the date by %s: ", DatePattern);
-        String inputDate = scanner.nextLine();
-        System.out.println("1. Equal\n2. After\n3. Before");
-        System.out.print("Choose an option: ");
-        int dateOption = scanner.nextInt();
-        Date searchDate = null;
-
+    while (searchDate == null) {
         try {
+            System.out.printf("Enter the date by %s: ", DatePattern);
+            String inputDate = scanner.nextLine();
             searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
         } catch (ParseException e) {
-            System.out.printf("Invalid date format. Please enter the date in the format %s.\n",DatePattern);
+            Utils.cls();
+            System.out.printf("Invalid date format. Please enter the date in the format %s.\n", DatePattern);
+            Utils.ptc();
+            // Don't return, allow the user to try again
         }
-        return updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm" , searchDate, dateOption, searchOption);
     }
+    int dateOption = 0;
+    while (dateOption < 1 || dateOption > 3) {
+        try {
+            System.out.println("1. Equal\n2. After\n3. Before");
+            System.out.print("Choose an option: ");
+            dateOption = scanner.nextInt();
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); 
+        }
+    }
+    return updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm", searchDate, dateOption, searchOption);
+}
+
 
     public static Map<Integer, PIMInterface> updateByDate(Map<Integer, PIMInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
         if (searchDate == null) {
@@ -431,7 +457,7 @@ public class PIM {
                 System.out.println("System Ended.");
                 return -1;
             }
-            default -> System.out.println("Invalid choice. Please choose a valid option.");
+            default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
         }
 
         return 1;
@@ -442,6 +468,8 @@ public class PIM {
         while(cmd != -1){
             cmd = home();
         }
+
+        
 
     }
 }
