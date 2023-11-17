@@ -32,7 +32,8 @@ class PIMKernel {
             case 3 -> {return "Event";}
             case 4 -> {return "Contact";}
             case 0 -> {return "home";}
-            default -> System.out.println("Invalid choice. Please choose a valid option.");
+            default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
+            
         }
         return null;
     }
