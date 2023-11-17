@@ -235,49 +235,56 @@ class PIMKernel {
             if (cmd == 0) break;
 
             if (cmd == 1) {
-                int displayNumber = -1;
-                PIMInterface selectedItem = null;
-                
-                while (selectedItem == null) {
-                    try {
-                        System.out.print("Enter #: ");
-                        displayNumber = scanner.nextInt();
+            int displayNumber;
+            PIMInterface selectedItem = null;
 
-                        selectedItem = copy.get(displayNumber);
-                        if (selectedItem == null) {
-                            System.out.println("Invalid #: No such item found.");
+            while (true) {
+                try {
+                    System.out.print("Enter #: ");
+                    displayNumber = scanner.nextInt();
+
+                    selectedItem = copy.get(displayNumber);
+                    if (selectedItem == null) {
+                        System.out.println("Invalid #: No such item found.");
+                        Utils.ptc();
+                        break; 
+                    } else {
+                        break; 
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    Utils.ptc();
+                    break; 
+                }
+            }
+            if (selectedItem != null) {
+                    Utils.cls();
+                    Map<String, Integer> titles = selectedItem.getTitles();
+                    String[] data = selectedItem.getData();
+                    int i = 0;
+                    for (String key : titles.keySet()) {
+                        System.out.printf("<%s>%n", key);
+                        System.out.printf("%s%n\n", data[i++]);
+                    }
+                    i = 0;
+                    for (String key : titles.keySet()) {
+                        System.out.printf("Do you want to modify %s? (Y/N): ", key);
+                        String choice = scanner.next().trim();
+                        if (choice.equalsIgnoreCase("Y")) {
+                            System.out.printf("Enter the modified %s: ", key);
+                            scanner.nextLine();  // Move to the next line to capture full string input
+                            data[i] = scanner.nextLine();
+                            selectedItem.setData(data); // Update the modified data
                         }
-                    } catch (InputMismatchException e) {
-                        System.out.println("Invalid input. Please enter a number.");
-                        scanner.nextLine(); 
+                        i++;
                     }
-                }
 
-                Utils.cls();
-                Map<String, Integer> titles = selectedItem.getTitles();
-                String[] data = selectedItem.getData();
-                int i = 0;
-                for (String key : titles.keySet()) {
-                    System.out.printf("<%s>%n", key);
-                    System.out.printf("%s%n\n", data[i++]);
-                }
-                i = 0;
-                for (String key : titles.keySet()) {
-                    System.out.printf("Do you want to modify %s? (Y/N): ", key);
-                    String choice = scanner.next().trim();
-                    if (choice.equalsIgnoreCase("Y")) {
-                        System.out.printf("Enter the modified %s: ", key);
-                        scanner.nextLine();  // Move to the next line to capture full string input
-                        data[i] = scanner.nextLine();
-                        selectedItem.setData(data); // Update the modified data
-                    }
-                    i++;
-                }
-
-                Utils.cls();
-                System.out.println("PIR content modified successfully.");
-                Utils.ptc();
-                return;
+                    Utils.cls();
+                    System.out.println("PIR content modified successfully.");
+                    Utils.ptc();
+                    return;
+            }
+                
 }
 
             else if (cmd == 2){
