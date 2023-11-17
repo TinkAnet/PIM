@@ -306,36 +306,23 @@ class PIMKernel {
         }
     }
     private static Map<Integer, PIMInterface> searchByDateTime(Map<Integer, PIMInterface> items, int task_event_flag, int searchOption) {
-    Scanner scanner = new Scanner(System.in);
-    String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
-    Date searchDate = null;
+        Scanner scanner = new Scanner(System.in);
+        String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
 
-    while (searchDate == null) {
+        System.out.printf("Enter the date by %s: ", DatePattern);
+        String inputDate = scanner.nextLine();
+        System.out.println("1. Equal\n2. After\n3. Before");
+        System.out.print("Choose an option: ");
+        int dateOption = scanner.nextInt();
+        Date searchDate = null;
+            
         try {
-            System.out.printf("Enter the date by %s: ", DatePattern);
-            String inputDate = scanner.nextLine();
             searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
         } catch (ParseException e) {
-            Utils.cls();
-            System.out.printf("Invalid date format. Please enter the date in the format %s.\n", DatePattern);
-            Utils.ptc();
-            // Don't return, allow the user to try again
+            System.out.printf("Invalid date format. Please enter the date in the format %s.\n",DatePattern);
         }
+        return updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm" , searchDate, dateOption, searchOption);
     }
-    int dateOption = 0;
-    while (dateOption < 1 || dateOption > 3) {
-        try {
-            System.out.println("1. Equal\n2. After\n3. Before");
-            System.out.print("Choose an option: ");
-            dateOption = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input. Please enter a number.");
-            scanner.nextLine(); 
-        }
-    }
-    return updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm", searchDate, dateOption, searchOption);
-}
-
 
     public static Map<Integer, PIMInterface> updateByDate(Map<Integer, PIMInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
         if (searchDate == null) {
