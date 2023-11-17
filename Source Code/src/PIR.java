@@ -38,6 +38,20 @@ class Contact extends PIMInterface implements Serializable {
         Utils.ptc();
     }
 
+    public Contact(String name, String email, String phoneNumber) {
+        // 初始化 TITLES，与原构造函数类似
+        TITLES = new LinkedHashMap<>();
+        TITLES.put("Name", 10);
+        TITLES.put("Email", 20);
+        TITLES.put("Phone Number", 20);
+
+        // 直接设置数据
+        data = new String[]{name, email, phoneNumber};
+
+        // 设置 ID
+        this.ID = nextId++;
+    }
+
     public static void setNextId(int nextId) {Contact.nextId = nextId;}
 }
 
@@ -74,6 +88,20 @@ class Task extends PIMInterface implements Serializable {
         Utils.ptc();
     }
 
+    public Task(String title, String description, String dueDate) {
+        // Initialize TITLES
+        TITLES = new LinkedHashMap<>();
+        TITLES.put("Title", 20);
+        TITLES.put("Description", 50);
+        TITLES.put("DueDate", 19);
+
+        // Set data directly
+        data = new String[]{title, description, dueDate};
+
+        // Set ID
+        this.ID = nextId++;
+    }
+
     public static void setNextId(int nextId) {Task.nextId = nextId;}
 }
 
@@ -95,6 +123,20 @@ class Text extends PIMInterface implements Serializable {
         System.out.println("The text is successfully added to the system.\n");
         this.ID = nextId++;
         Utils.ptc();
+
+    }
+
+    public Text(String title, String note) {
+        // Initialize TITLES
+        TITLES = new LinkedHashMap<>();
+        TITLES.put("Title", 20);
+        TITLES.put("Note", 50);
+
+        // Set data directly
+        data = new String[]{title, note};
+
+        // Set ID
+        this.ID = nextId++;
     }
 
     public static void setNextId(int nextId) {Text.nextId = nextId;}
@@ -138,6 +180,21 @@ class Event extends PIMInterface implements Serializable {
         System.out.println("The event is successfully added to the system.\n");
         this.ID = nextId++;
         Utils.ptc();
+    }
+
+    public Event(String title, String description, String startingTime, String alarm) {
+        // Initialize TITLES
+        TITLES = new LinkedHashMap<>();
+        TITLES.put("Title", 10);
+        TITLES.put("Description", 20);
+        TITLES.put("Starting Time", 19);
+        TITLES.put("Alarm", 19);
+
+        // Set data directly
+        data = new String[]{title, description, startingTime, alarm};
+
+        // Set ID
+        this.ID = nextId++;
     }
 
     public static void setNextId(int nextId) {Text.nextId = nextId;}
