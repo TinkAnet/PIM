@@ -60,18 +60,20 @@ class PIMKernel {
     }
 
     public void search_PIR() {
-        //System.out.println("\n\n");
         Utils.cls();
         System.out.println("Which information do you want to search?");
         String type = types();
-        boolean hasItems = pimItems.values().stream().anyMatch(map -> !map.isEmpty());
-    if (!hasItems) {
-        Utils.cls();
-        System.out.println("No items available to search. Please create an item first.");
-        Utils.ptc();
-        return; // Return early as there's nothing to search
+        if ("home".equalsIgnoreCase(type)) {
+        return; 
     }
-        if (pimItems.get(type) == null && !Objects.equals(type, "Home")) {System.out.println("No data in the system."); return;}
+
+    Map<Integer, PIMInterface> itemsOfType = pimItems.get(type);
+    if (itemsOfType == null || itemsOfType.isEmpty()) {
+        Utils.cls();
+        System.out.println("No items of type '" + type + "' available to search. Please create an item of this type first.");
+        Utils.ptc();
+        return; 
+    }
         if (type != null) {
             switch (type) {
                 case "Text" -> search(pimItems.get("Text"));
