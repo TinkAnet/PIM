@@ -18,7 +18,7 @@ class PIMKernel {
         int choice = -1;
         while (choice == -1) {
             try {
-                System.out.print("Choose an option:");
+                System.out.print("Choose an option: ");
                 choice = scanner.nextInt();
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a number.");
@@ -30,7 +30,7 @@ class PIMKernel {
             case 2 -> {return "Task";}
             case 3 -> {return "Event";}
             case 4 -> {return "Contact";}
-            case 0 -> {return "home";}
+            case 0 -> {return "Home";}
             default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
             
         }
@@ -235,57 +235,57 @@ class PIMKernel {
             if (cmd == 0) break;
 
             if (cmd == 1) {
-            int displayNumber;
-            PIMInterface selectedItem = null;
+                int displayNumber;
+                PIMInterface selectedItem = null;
 
-            while (true) {
-                try {
-                    System.out.print("Enter #: ");
-                    displayNumber = scanner.nextInt();
+                while (true) {
+                    try {
+                        System.out.print("Enter #: ");
+                        displayNumber = scanner.nextInt();
 
-                    selectedItem = copy.get(displayNumber);
-                    if (selectedItem == null) {
-                        System.out.println("Invalid #: No such item found.");
-                        Utils.ptc();
-                        break; 
-                    } else {
-                        break; 
-                    }
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid input. Please enter a number.");
-                    Utils.ptc();
-                    break; 
-                }
-            }
-            if (selectedItem != null) {
-                    Utils.cls();
-                    Map<String, Integer> titles = selectedItem.getTitles();
-                    String[] data = selectedItem.getData();
-                    int i = 0;
-                    for (String key : titles.keySet()) {
-                        System.out.printf("<%s>%n", key);
-                        System.out.printf("%s%n\n", data[i++]);
-                    }
-                    i = 0;
-                    for (String key : titles.keySet()) {
-                        System.out.printf("Do you want to modify %s? (Y/N): ", key);
-                        String choice = scanner.next().trim();
-                        if (choice.equalsIgnoreCase("Y")) {
-                            System.out.printf("Enter the modified %s: ", key);
-                            scanner.nextLine();  // Move to the next line to capture full string input
-                            data[i] = scanner.nextLine();
-                            selectedItem.setData(data); // Update the modified data
+                        selectedItem = copy.get(displayNumber);
+                        if (selectedItem == null) {
+                            System.out.println("Invalid #: No such item found.");
+                            Utils.ptc();
                         }
-                        i++;
+                        break;
+                    } catch (InputMismatchException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        Utils.ptc();
+                        break;
                     }
-
-                    Utils.cls();
-                    System.out.println("PIR content modified successfully.");
-                    Utils.ptc();
-                    return;
-            }
+                }
+                if (selectedItem != null) {
+                        Utils.cls();
+                        Map<String, Integer> titles = selectedItem.getTitles();
+                        String[] data = selectedItem.getData();
+                        int i = 0;
+                        for (String key : titles.keySet()) {
+                            System.out.printf("<%s>%n", key);
+                            System.out.printf("%s%n\n", data[i++]);
+                        }
+                        i = 0; boolean changedFlag = false;
+                        for (String key : titles.keySet()) {
+                            System.out.printf("Do you want to modify %s? (Y/N): ", key);
+                            String choice = scanner.next().trim();
+                            if (choice.equalsIgnoreCase("Y")) {
+                                changedFlag = true;
+                                System.out.printf("Enter the modified %s: ", key);
+                                scanner.nextLine();  // Move to the next line to capture full string input
+                                data[i] = scanner.nextLine();
+                                selectedItem.setData(data); // Update the modified data
+                            }
+                            i++;
+                        }
+                        Utils.cls();
+                        if(changedFlag){
+                            System.out.println("PIR content modified successfully.");
+                            Utils.ptc();
+                        }
+                        return;
+                }
                 
-}
+            }
 
             else if (cmd == 2){
                 scanner.nextLine();
