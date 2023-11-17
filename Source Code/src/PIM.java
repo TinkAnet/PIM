@@ -4,10 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-
 // PIMKernel
 class PIMKernel {
-    private Map<String, Map<Integer, PIMInterface>> pimItems;
+    Map<String, Map<Integer, PIMInterface>> pimItems;
     public PIMKernel() {pimItems = new LinkedHashMap<>();}
     private static String types(){
         System.out.println("1. Text Note");
