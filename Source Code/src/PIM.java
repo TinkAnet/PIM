@@ -52,8 +52,7 @@ class PIMKernel {
                 case "Home" -> {
                     return;
                 }
-                default -> {
-                }
+                default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
             }
         }
         if (data != null) {
@@ -74,8 +73,7 @@ class PIMKernel {
                 case "Task" -> search(pimItems.get("Task"));
                 case "Contact" -> search(pimItems.get("Contact"));
                 case "Event" -> search(pimItems.get("Event"));
-                default -> {
-                }
+                default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
             }
         }
     }
@@ -280,9 +278,7 @@ class PIMKernel {
                         }
                         case 0 -> {
                         }
-                        default -> {
-                            System.out.println("Invalid Option");
-                        }
+                        default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
                     }
                 }
             }
@@ -433,7 +429,7 @@ public class PIM {
                 System.out.println("System Ended.");
                 return -1;
             }
-            default -> System.out.println("Invalid choice. Please choose a valid option.");
+            default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
         }
 
         return 1;
