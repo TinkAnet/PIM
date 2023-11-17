@@ -233,9 +233,23 @@ class PIMKernel {
             if (cmd == 0) break;
 
             if (cmd == 1) {
-                System.out.print("Enter #: ");
-                int displayNumber = scanner.nextInt();
-                PIMInterface selectedItem = copy.get(displayNumber);
+                int displayNumber = -1;
+                PIMInterface selectedItem = null;
+                
+                while (selectedItem == null) {
+                    try {
+                        System.out.print("Enter #: ");
+                        displayNumber = scanner.nextInt();
+
+                        selectedItem = copy.get(displayNumber);
+                        if (selectedItem == null) {
+                            System.out.println("Invalid #: No such item found.");
+                        }
+                    } catch (InputMismatchException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        scanner.nextLine(); 
+                    }
+                }
 
                 Utils.cls();
                 Map<String, Integer> titles = selectedItem.getTitles();
@@ -251,7 +265,8 @@ class PIMKernel {
                     String choice = scanner.next().trim();
                     if (choice.equalsIgnoreCase("Y")) {
                         System.out.printf("Enter the modified %s: ", key);
-                        data[i] = scanner.next();
+                        scanner.nextLine();  // Move to the next line to capture full string input
+                        data[i] = scanner.nextLine();
                         selectedItem.setData(data); // Update the modified data
                     }
                     i++;
@@ -261,7 +276,8 @@ class PIMKernel {
                 System.out.println("PIR content modified successfully.");
                 Utils.ptc();
                 return;
-            }
+}
+
             else if (cmd == 2){
                 scanner.nextLine();
                 Utils.cls();
