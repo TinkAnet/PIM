@@ -1,3 +1,5 @@
+import PIR.*;
+
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,7 +34,7 @@ class PIMKernel {
         }
     }
 
-    public void export() {
+    void export() {
         try{
             System.out.println("Name the file where you want to export: ");
             Scanner scanner = new Scanner(System.in);
@@ -54,7 +56,7 @@ class PIMKernel {
         } 
     }
 
-    public void load() {
+    void load() {
         try{
             System.out.println("Enter the filename to be load from: ");
             Scanner scanner = new Scanner(System.in);
@@ -96,7 +98,7 @@ class PIMKernel {
         
     }
 
-    public Map<Integer, Integer> print(Collection<PIRInterface> items) {
+    Map<Integer, Integer> print(Collection<PIRInterface> items) {
         if (items.isEmpty()) {
             System.out.println("No data");
             return null;
@@ -150,7 +152,7 @@ class PIMKernel {
         return displayNumberToId;
     }
 
-    public Map<Integer, PIRInterface> updateByDate(Map<Integer, PIRInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
+    Map<Integer, PIRInterface> updateByDate(Map<Integer, PIRInterface> current, String DatePattern, Date searchDate, int dateOption, int searchOption) {
         if (searchDate == null) {
             System.out.println("Invalid time: search date is null");
             return current;
@@ -180,7 +182,7 @@ class PIMKernel {
         }
         return false;
     }
-    public Map<Integer, PIRInterface> UpdateByKeyword(Map<Integer, PIRInterface> current, Map<Integer, PIRInterface> all, String keyword, String mode) {
+    Map<Integer, PIRInterface> updateByKeyword(Map<Integer, PIRInterface> current, Map<Integer, PIRInterface> all, String keyword, String mode) {
         Map<Integer, PIRInterface> result = new HashMap<>();
         keyword = keyword.toLowerCase();
 
@@ -223,11 +225,11 @@ class PIMKernel {
         };
     }
 
-    public void modifyPIR(PIRInterface selectedItem, String[] data) {
+    void modifyPIR(PIRInterface selectedItem, String[] data) {
         selectedItem.setData(data);
     }
 
-    public void deletePIR(PIRInterface selectedItem, String type) {
+    void deletePIR(PIRInterface selectedItem, String type) {
         pimItems.get(type).remove(selectedItem.getID());
     }
 }
@@ -266,7 +268,7 @@ public class PIM {
         return null;
     }
 
-    private int moves() {
+    int moves() {
         Utils.cls();
         System.out.println("[ Home Page ]");
         System.out.println("1. Create");
@@ -295,7 +297,7 @@ public class PIM {
         return choice;
     }
     
-    private int home(){
+    int home(){
         switch (moves()) {
             case 1 -> {
                 System.out.println("Which information do you want to create?");
@@ -303,7 +305,7 @@ public class PIM {
             }
             case 2 -> {
                 System.out.println("Which information do you want to search?");
-                search_PIR(types());
+                searchPIR(types());
             }
             case 3 -> kernel.export();
             case 4 -> kernel.load();
@@ -317,9 +319,7 @@ public class PIM {
         return 1;
     }
 
-    public void search_PIR(String type) {
-
-
+    void searchPIR(String type) {
         if (type == null || type.equalsIgnoreCase("home"))
             return;
 
@@ -379,7 +379,7 @@ public class PIM {
         }
     }
 
-    private void selectItem(Map<Integer, Integer> displayNumberToId, Map<Integer, PIRInterface> copy, String type) {
+    void selectItem(Map<Integer, Integer> displayNumberToId, Map<Integer, PIRInterface> copy, String type) {
         Scanner scanner = new Scanner(System.in);
         PIRInterface selectedItem = null;
 
@@ -462,7 +462,7 @@ public class PIM {
 
         if(expressionList.isEmpty()){
             expressionList.add(String.format("\"%s\"",keyword));
-            copy = kernel.UpdateByKeyword(copy, items, keyword,"and");
+            copy = kernel.updateByKeyword(copy, items, keyword,"and");
         } else {
             System.out.println("Extend the keyword to the last one by:");
             System.out.println("1. AND\n2. OR\n3. NOT\n0. Go back");
@@ -471,17 +471,17 @@ public class PIM {
                     case 1 -> {
                         expressionList.add("AND");
                         expressionList.add(String.format("\"%s\"", keyword));
-                        copy = kernel.UpdateByKeyword(copy, items, keyword, "and");
+                        copy = kernel.updateByKeyword(copy, items, keyword, "and");
                     }
                     case 2 -> {
                         expressionList.add("OR");
                         expressionList.add(String.format("\"%s\"", keyword));
-                        copy = kernel.UpdateByKeyword(copy, items, keyword, "or");
+                        copy = kernel.updateByKeyword(copy, items, keyword, "or");
                     }
                     case 3 -> {
                         expressionList.add("NOT");
                         expressionList.add(String.format("\"%s\"", keyword));
-                        copy = kernel.UpdateByKeyword(copy, items, keyword, "not");
+                        copy = kernel.updateByKeyword(copy, items, keyword, "not");
                     }
                     case 0 -> {
                     }
@@ -528,13 +528,5 @@ public class PIM {
     }
 
 
-    public static void main(String[] args) {
-        PIM pim = new PIM();
-        System.out.println("Welcome to the Personal Information Management System!");
-        int cmd = 0;
-        while(cmd != -1){
-            cmd = pim.home();
-        }
 
-    }
 }

@@ -1,8 +1,9 @@
+import PIR.Contact;
+import PIR.Event;
+import PIR.Task;
+import PIR.Text;
 import org.junit.Test;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class PIMtest {
