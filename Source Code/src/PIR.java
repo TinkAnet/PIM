@@ -3,7 +3,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-abstract class PIMInterface implements Serializable{
+abstract class PIRInterface implements Serializable{
     protected int ID;
     protected String[] data;
     protected Map<String, Integer> TITLES = new LinkedHashMap<>();
@@ -15,7 +15,7 @@ abstract class PIMInterface implements Serializable{
     public int getID() {return ID;}
 }
 
-class Contact extends PIMInterface implements Serializable {
+class Contact extends PIRInterface implements Serializable {
     protected static int nextId = 1;
     public Contact() {
         TITLES = new LinkedHashMap<>();
@@ -55,7 +55,7 @@ class Contact extends PIMInterface implements Serializable {
     public static void setNextId(int nextId) {Contact.nextId = nextId;}
 }
 
-class Task extends PIMInterface implements Serializable {
+class Task extends PIRInterface implements Serializable {
     public static final String dateFormat = "yyyyMMdd";
     protected static int nextId = 1;
     public Task() {
@@ -105,7 +105,7 @@ class Task extends PIMInterface implements Serializable {
     public static void setNextId(int nextId) {Task.nextId = nextId;}
 }
 
-class Text extends PIMInterface implements Serializable {
+class Text extends PIRInterface implements Serializable {
     protected static int nextId = 1;
     public Text() {
         TITLES = new LinkedHashMap<>();
@@ -142,7 +142,7 @@ class Text extends PIMInterface implements Serializable {
     public static void setNextId(int nextId) {Text.nextId = nextId;}
 }
 
-class Event extends PIMInterface implements Serializable {
+class Event extends PIRInterface implements Serializable {
     public static final String dateFormat = "yyyyMMdd HHmm";
     protected static int nextId = 1;
 
