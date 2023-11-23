@@ -213,7 +213,7 @@ class PIMKernel {
 
         return result;
     }
-    private boolean compareDates(Date eventDate, Date searchDate, int option) {
+    public boolean compareDates(Date eventDate, Date searchDate, int option) {
         return switch (option) {
             case 1 -> // Equal
                     eventDate.equals(searchDate);
@@ -239,7 +239,7 @@ public class PIM {
 
     private static final PIMKernel kernel = new PIMKernel();
 
-    private String types(){
+    public String types(){
         System.out.println("1. Text Note");
         System.out.println("2. Task");
         System.out.println("3. Event");
@@ -530,3 +530,4 @@ public class PIM {
 
 
 }
+
