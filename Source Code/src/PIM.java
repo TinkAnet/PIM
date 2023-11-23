@@ -15,7 +15,7 @@ class PIMKernel {
         return pimItems;
     }
 
-    public void create_PIR(String type) {
+    public void createPIR(String type) {
         Utils.cls();
         PIRInterface data = null;
         if (type != null) {
@@ -301,7 +301,7 @@ public class PIM {
         switch (moves()) {
             case 1 -> {
                 System.out.println("Which information do you want to create?");
-                kernel.create_PIR(types());
+                kernel.createPIR(types());
             }
             case 2 -> {
                 System.out.println("Which information do you want to search?");

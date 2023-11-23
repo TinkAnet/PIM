@@ -22,6 +22,7 @@ public class Contact extends PIRInterface implements Serializable {
         data[1] = scanner.nextLine();
         System.out.print("Phone number: ");
         data[2] = scanner.nextLine();
+        scanner.close();
         Utils.cls();
         System.out.println("The contact is successfully added to the system.\n");
         this.ID = nextId++;
