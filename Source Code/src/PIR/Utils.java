@@ -25,6 +25,7 @@ public class Utils {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("\n\n[Press any key to continue...]");
-        scanner.nextLine();
+        if(scanner.hasNextLine())
+            scanner.nextLine();
     }
 }

@@ -8,8 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Scanner;
 
 public class Task extends PIRInterface implements Serializable {
-    public static final String dateFormat = "yyyyMMdd";
     protected static int nextId = 1;
+    public static final String dateFormat = "yyyyMMdd";
 
     public Task() {
         TITLES = new LinkedHashMap<>();
