@@ -15,22 +15,12 @@ class PIMKernel {
         return pimItems;
     }
 
-    public void createPIR(String type) {
-        Utils.cls();
-        PIRInterface data = null;
-        if (type != null) {
-            switch (type) {
-                case "Text" -> data = new Text();
-                case "Task" -> data = new Task();
-                case "Event" -> data = new Event();
-                case "Contact" -> data = new Contact();
-                case "Home" -> {
-                    return;
-                }
-            }
-        }
-        if (data != null) {
-            pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(data.getID(), data);
+    public void createPIR(PIRInterface newPIR, String[] newData, String type) {
+        if (newPIR != null && type != null) {
+            newPIR.setID(newPIR.getNexId());
+            newPIR.setData(newData);
+            pimItems.computeIfAbsent(type, k -> new HashMap<>()).put(newPIR.getID(), newPIR);
+            newPIR.setNextId(newPIR.getNexId()+1);
         }
     }
 
@@ -66,16 +56,16 @@ class PIMKernel {
             pimItems = (Map<String, Map<Integer, PIRInterface>>) in.readObject();
 
             if(pimItems.containsKey("Text")){
-                Text.setNextId(pimItems.get("Text").size()+1);
+                new Text().setNextId(pimItems.get("Text").size()+1);
             }
             if(pimItems.containsKey("Task")){
-                Task.setNextId(pimItems.get("Task").size()+1);
+                new Task().setNextId(pimItems.get("Task").size()+1);
             }
             if(pimItems.containsKey("Contact")){
-                Contact.setNextId(pimItems.get("Contact").size()+1);
+                new Contact().setNextId(pimItems.get("Contact").size()+1);
             }
             if(pimItems.containsKey("Event")){
-                Event.setNextId(pimItems.get("Event").size()+1);
+                new Event().setNextId(pimItems.get("Event").size()+1);
             }
 
             in.close();
@@ -83,18 +73,18 @@ class PIMKernel {
             System.out.printf("PIRs loaded from %s successfully",filename);
             Utils.ptc();
         }catch (FileNotFoundException e) {
-        System.out.println("File not found: " + e.getMessage());
-        Utils.ptc();
-    } catch (IOException e) {
-        System.out.println("I/O error: " + e.getMessage());
-        Utils.ptc();
-    } catch (ClassNotFoundException e) {
-        System.out.println("Class not found: " + e.getMessage());
-        Utils.ptc();
-    } catch (Exception e) {
-        System.out.println("An unexpected error occurred: " + e.getMessage());
-        Utils.ptc();
-    }
+            System.out.println("File not found: " + e.getMessage());
+            Utils.ptc();
+        } catch (IOException e) {
+            System.out.println("I/O error: " + e.getMessage());
+            Utils.ptc();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Class not found: " + e.getMessage());
+            Utils.ptc();
+        } catch (Exception e) {
+            System.out.println("An unexpected error occurred: " + e.getMessage());
+            Utils.ptc();
+        }
         
     }
 
@@ -165,7 +155,7 @@ class PIMKernel {
             try {
                 dueDate = new SimpleDateFormat(DatePattern).parse(data[searchOption == 3 ? 2 : 3]);
             } catch (ParseException e) {
-                e.printStackTrace();
+                System.out.printf("error: %s",e.getMessage());
             }
             if (compareDates(dueDate, searchDate, dateOption)) filteredItems.put(item.getID(), item);
 
@@ -213,7 +203,7 @@ class PIMKernel {
 
         return result;
     }
-    public boolean compareDates(Date eventDate, Date searchDate, int option) {
+    private boolean compareDates(Date eventDate, Date searchDate, int option) {
         return switch (option) {
             case 1 -> // Equal
                     eventDate.equals(searchDate);
@@ -239,7 +229,7 @@ public class PIM {
 
     private static final PIMKernel kernel = new PIMKernel();
 
-    public String types(){
+    private String types(){
         System.out.println("1. Text Note");
         System.out.println("2. Task");
         System.out.println("3. Event");
@@ -301,7 +291,7 @@ public class PIM {
         switch (moves()) {
             case 1 -> {
                 System.out.println("Which information do you want to create?");
-                kernel.createPIR(types());
+                createPIR(types());
             }
             case 2 -> {
                 System.out.println("Which information do you want to search?");
@@ -488,7 +478,9 @@ public class PIM {
                     default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
                 }
             }catch (InputMismatchException e){
-
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine();
+                Utils.cls();
             }
 
         }
@@ -527,7 +519,47 @@ public class PIM {
         }
     }
 
+    void createPIR(String type){
+        if (type == null) return;
+        Scanner scanner = new Scanner(System.in);
+        PIRInterface newPIR;
 
+        switch (type){
+            case "Contact" -> newPIR = new Contact();
+            case "Event" -> newPIR = new Event();
+            case "Task" -> newPIR = new Task();
+            case "Text" -> newPIR = new Text();
+            default -> {return;}
+        }
+
+        Utils.cls();
+        String[] data = new String[newPIR.getTitles().size()];
+        int i = 0;
+
+        for(String title : newPIR.getTitles().keySet()){
+            if(title.equals("DueDate") || title.equals("Starting Time") || title.equals("Alarm")){
+                String dateFormat = type.equals("Task") ? Task.getDateFormat() : Event.getDateFormat();
+                System.out.printf("%s in format %s: ",title,dateFormat);
+                Date DateTime;
+
+                try {
+                    DateTime = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
+                } catch (ParseException e) {
+                    System.out.println("Invalid Time format");
+                    Utils.ptc();
+                    return;
+                }
+                data[i] = new SimpleDateFormat(type.equals("Task") ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss").format(DateTime);
+            }else{
+                System.out.printf("%s: ",title);
+                data[i] = scanner.nextLine();
+            }
+            i++;
+        }
+        Utils.cls();
+        kernel.createPIR(newPIR,data,type);
+        System.out.printf("The %s is successfully added to the system.\n\n",type.toLowerCase());
+        Utils.ptc();
+    }
 
 }
-
