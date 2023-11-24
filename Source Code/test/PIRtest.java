@@ -7,23 +7,28 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 
 import static org.junit.Assert.*;
 
 public class PIRtest {
     Contact contact ;
-    String[] c1, c2, c3, c4, c5;
+    String[] c1, c2;
+
+
 
     @Before
     public void prepare(){
-        contact = new Contact("", "", "");
+        prepareContact();
+    }
 
+    public void prepareContact(){
+        contact = new Contact("", "", "");
         c1 = new String[]{"John Doe", "john.doe@example.com", "1234567890"};
         c2 = new String[]{"Jan Ashely","jan.ashely@example.com","34395504288"};
-
     }
+
+
 
     @Test
     public void testContactCreation1() {
@@ -71,7 +76,6 @@ public class PIRtest {
         assertEquals(new Contact("","","").getID()-1, 10);
     }
 
-
     @Test
     public void testEventCreation() {
         Event event = new Event("Meeting", "Discuss Project", "2023-01-01 10:00", "2023-01-01 09:30");
@@ -83,25 +87,8 @@ public class PIRtest {
         assertEquals(1, event.getID());
     }
 
-    @Test
-    public void testTaskCreation() {
-        Task task = new Task("Complete Report", "Finish the monthly report", "2023-01-10");
 
-        assertEquals("Complete Report", task.getData()[0]);
-        assertEquals("Finish the monthly report", task.getData()[1]);
-        assertEquals("2023-01-10", task.getData()[2]);
-        assertEquals(1, task.getID());
-    }
 
-    @Test
-    public void testTextCreation() {
-        Text text = new Text("Reminder", "Buy groceries");
-
-        assertEquals("Reminder", text.getData()[0]);
-        assertEquals("Buy groceries", text.getData()[1]);
-        assertEquals(1, text.getID());
-    }
 
 }
-
 

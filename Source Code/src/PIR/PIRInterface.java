@@ -6,8 +6,8 @@ import java.util.Map;
 
 public abstract class PIRInterface implements Serializable {
     protected int ID;
-    protected String[] data;
-    protected Map<String, Integer> TITLES;
+    protected String[] data = new String[]{};
+    protected Map<String, Integer> TITLES = new LinkedHashMap<>();
 
     public Map<String, Integer> getTitles() {
         return TITLES;

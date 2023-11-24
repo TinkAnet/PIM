@@ -478,7 +478,9 @@ public class PIM {
                     default -> {System.out.println("Invalid choice. Please choose a valid option.");Utils.ptc();}
                 }
             }catch (InputMismatchException e){
-
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine();
+                Utils.cls();
             }
 
         }
