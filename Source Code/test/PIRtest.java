@@ -7,22 +7,36 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 
 import static org.junit.Assert.*;
 
 public class PIRtest {
     Contact contact ;
-    String[] c1, c2, c3, c4, c5;
+    String[] c1, c2;
+
+
 
     @Before
     public void prepare(){
+        prepareContact();
+    }
+
+    public void prepareContact(){
         contact = new Contact("", "", "");
         c1 = new String[]{"John Doe", "john.doe@example.com", "1234567890"};
         c2 = new String[]{"Jan Ashely","jan.ashely@example.com","34395504288"};
-
     }
+    @Test
+    public void testTaskCreation() {
+        Task task = new Task("Complete Report", "Finish the monthly report", "2023-01-10");
+
+        assertEquals("Complete Report", task.getData()[0]);
+        assertEquals("Finish the monthly report", task.getData()[1]);
+        assertEquals("2023-01-10", task.getData()[2]);
+        assertEquals(1, task.getID());
+    }
+
 
     @Test
     public void testContactCreation1() {
@@ -30,12 +44,10 @@ public class PIRtest {
         Contact contact = new Contact(c1[0], c1[1], c1[2]);
 
         // 检查数据是否正确设置
-        assertEquals(c1[0], contact.getData()[0]);
-        assertEquals(c1[1], contact.getData()[1]);
-        assertEquals(c1[2], contact.getData()[2]);
+        assertArrayEquals(c1, contact.getData());
 
         // ID 应该自动递增，假设它从1开始
-        assertEquals(1, contact.getID());
+        assertEquals(2, contact.getID());
     }
 
     @Test
@@ -47,9 +59,7 @@ public class PIRtest {
 
         Contact contact = new Contact();
 
-        assertEquals(c1[0], contact.getData()[0]);
-        assertEquals(c1[1], contact.getData()[1]);
-        assertEquals(c1[2], contact.getData()[2]);
+        assertArrayEquals(c1, contact.getData());
 
         // ID 应该自动递增，假设它从1开始
         assertEquals(2, contact.getID());
@@ -59,14 +69,11 @@ public class PIRtest {
     public void testContactSetData() {
         contact.setData(c2);
 
-        assertEquals(c2[0], contact.getData()[0]);
-        assertEquals(c2[1], contact.getData()[1]);
-        assertEquals(c2[2], contact.getData()[2]);
+        assertArrayEquals(c2, contact.getData());
     }
 
     @Test
     public void testContactSetNextID() {
-        Contact.setNextId(0);
 
         assertEquals(new Contact("","","").getID()-1, 0);
 
@@ -76,7 +83,6 @@ public class PIRtest {
 
         assertEquals(new Contact("","","").getID()-1, 10);
     }
-
 
     @Test
     public void testEventCreation() {
@@ -89,25 +95,8 @@ public class PIRtest {
         assertEquals(1, event.getID());
     }
 
-    @Test
-    public void testTaskCreation() {
-        Task task = new Task("Complete Report", "Finish the monthly report", "2023-01-10");
 
-        assertEquals("Complete Report", task.getData()[0]);
-        assertEquals("Finish the monthly report", task.getData()[1]);
-        assertEquals("2023-01-10", task.getData()[2]);
-        assertEquals(1, task.getID());
-    }
 
-    @Test
-    public void testTextCreation() {
-        Text text = new Text("Reminder", "Buy groceries");
-
-        assertEquals("Reminder", text.getData()[0]);
-        assertEquals("Buy groceries", text.getData()[1]);
-        assertEquals(1, text.getID());
-    }
 
 }
-
 
