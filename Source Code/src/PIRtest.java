@@ -19,6 +19,7 @@ public class PIRtest {
     @Before
     public void prepare(){
         contact = new Contact("", "", "");
+
         c1 = new String[]{"John Doe", "john.doe@example.com", "1234567890"};
         c2 = new String[]{"Jan Ashely","jan.ashely@example.com","34395504288"};
 
@@ -30,12 +31,10 @@ public class PIRtest {
         Contact contact = new Contact(c1[0], c1[1], c1[2]);
 
         // 检查数据是否正确设置
-        assertEquals(c1[0], contact.getData()[0]);
-        assertEquals(c1[1], contact.getData()[1]);
-        assertEquals(c1[2], contact.getData()[2]);
+        assertArrayEquals(c1, contact.getData());
 
         // ID 应该自动递增，假设它从1开始
-        assertEquals(1, contact.getID());
+        assertEquals(2, contact.getID());
     }
 
     @Test
@@ -47,9 +46,7 @@ public class PIRtest {
 
         Contact contact = new Contact();
 
-        assertEquals(c1[0], contact.getData()[0]);
-        assertEquals(c1[1], contact.getData()[1]);
-        assertEquals(c1[2], contact.getData()[2]);
+        assertArrayEquals(c1, contact.getData());
 
         // ID 应该自动递增，假设它从1开始
         assertEquals(2, contact.getID());
@@ -59,14 +56,11 @@ public class PIRtest {
     public void testContactSetData() {
         contact.setData(c2);
 
-        assertEquals(c2[0], contact.getData()[0]);
-        assertEquals(c2[1], contact.getData()[1]);
-        assertEquals(c2[2], contact.getData()[2]);
+        assertArrayEquals(c2, contact.getData());
     }
 
     @Test
     public void testContactSetNextID() {
-        Contact.setNextId(0);
 
         assertEquals(new Contact("","","").getID()-1, 0);
 

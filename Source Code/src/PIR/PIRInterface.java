@@ -7,7 +7,7 @@ import java.util.Map;
 public abstract class PIRInterface implements Serializable {
     protected int ID;
     protected String[] data;
-    protected Map<String, Integer> TITLES = new LinkedHashMap<>();
+    protected Map<String, Integer> TITLES;
 
     public Map<String, Integer> getTitles() {
         return TITLES;
@@ -21,8 +21,11 @@ public abstract class PIRInterface implements Serializable {
         this.data = data;
     }
 
-    public static void setNextId(int nextId) {
-    }
+    public void setNextId(int nextId) {}
+
+    public Integer getNexId() {return null;}
+
+    public void setID(int newID){ID = newID;}
 
     public int getID() {
         return ID;
