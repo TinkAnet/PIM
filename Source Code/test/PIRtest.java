@@ -27,7 +27,15 @@ public class PIRtest {
         c1 = new String[]{"John Doe", "john.doe@example.com", "1234567890"};
         c2 = new String[]{"Jan Ashely","jan.ashely@example.com","34395504288"};
     }
+    @Test
+    public void testTaskCreation() {
+        Task task = new Task("Complete Report", "Finish the monthly report", "2023-01-10");
 
+        assertEquals("Complete Report", task.getData()[0]);
+        assertEquals("Finish the monthly report", task.getData()[1]);
+        assertEquals("2023-01-10", task.getData()[2]);
+        assertEquals(1, task.getID());
+    }
 
 
     @Test
