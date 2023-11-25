@@ -342,28 +342,32 @@ public class PIM {
             if (task_event_flag == 1) {System.out.println("3. Search by DueDate");}
             else if(task_event_flag == 2) {System.out.println("3. Search by Starting Time\n4. Search by Alarm");}
             System.out.println("0. Back to home");
-            System.out.print("Choose an option: ");
 
-            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                System.out.print("Choose an option: ");
+                Scanner scanner = new Scanner(System.in);
+                try {
+                    int input = scanner.nextInt();
+                    switch (input) {
+                        case 0 -> {
+                            Utils.cls();
+                            return;
+                        }
+                        case 1 -> selectItem(displayNumberToId, copy, type);
+                        case 2 -> copy = searchByKeyword(copy, expressionList, items);
+                        case 3 -> {
+                            if (task_event_flag > 0) copy = searchByDateTime(copy, task_event_flag, 3);
+                        }
+                        case 4 -> {
+                            if (task_event_flag == 2) copy = searchByDateTime(copy, task_event_flag, 4);
+                        }
+                        default -> System.out.println("Invalid choice. Please choose a valid option.");
 
-            try{
-                switch (scanner.nextInt()){
-                    case 0 -> {
-                        Utils.cls();
-                        return;
                     }
-                    case 1 -> selectItem(displayNumberToId, copy, type);
-                    case 2 -> copy = searchByKeyword(copy, expressionList,  items);
-                    case 3 -> {if (task_event_flag > 0) copy = searchByDateTime(copy, task_event_flag, 3);}
-                    case 4 -> {if (task_event_flag ==2) copy = searchByDateTime(copy, task_event_flag, 4);}
-                    default -> {
-                        System.out.println("Invalid choice. Please choose a valid option.");
-                        Utils.ptc();
-                    }
+                    if (input >= 0 && input <= 4) break;
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a number.");
                 }
-            }catch (InputMismatchException e){
-                System.out.println("Invalid input. Please enter a number.");
-                Utils.ptc();
             }
 
         }
@@ -427,18 +431,21 @@ public class PIM {
         Scanner scanner = new Scanner(System.in);
         String DatePattern = task_event_flag == 1 ? "yyyyMMdd" : "yyyyMMdd HHmm";
 
-        System.out.printf("Enter the date by %s: ", DatePattern);
-        String inputDate = scanner.nextLine();
+        Date searchDate = null;
+        while (true) {
+            System.out.printf("Enter the date by %s: ", DatePattern);
+            String inputDate = scanner.nextLine();
+            try {
+                searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
+                break;
+            } catch (ParseException e) {
+                System.out.printf("Invalid date format. Please enter the date in the format %s.\n", DatePattern);
+            }
+        }
         System.out.println("1. Equal\n2. After\n3. Before");
         System.out.print("Choose an option: ");
         int dateOption = scanner.nextInt();
-        Date searchDate = null;
 
-        try {
-            searchDate = new SimpleDateFormat(DatePattern).parse(inputDate);
-        } catch (ParseException e) {
-            System.out.printf("Invalid date format. Please enter the date in the format %s.\n",DatePattern);
-        }
         return kernel.updateByDate(items, task_event_flag == 1 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm" , searchDate, dateOption, searchOption);
     }
 
@@ -539,15 +546,15 @@ public class PIM {
         for(String title : newPIR.getTitles().keySet()){
             if(title.equals("DueDate") || title.equals("Starting Time") || title.equals("Alarm")){
                 String dateFormat = type.equals("Task") ? Task.getDateFormat() : Event.getDateFormat();
-                System.out.printf("%s in format %s: ",title,dateFormat);
-                Date DateTime;
-
-                try {
-                    DateTime = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
-                } catch (ParseException e) {
-                    System.out.println("Invalid Time format");
-                    Utils.ptc();
-                    return;
+                Date DateTime = null;
+                while (true) {
+                    System.out.printf("%s in format %s: ",title,dateFormat);
+                    try {
+                        DateTime = new SimpleDateFormat(dateFormat).parse(scanner.nextLine());
+                        break;
+                    } catch (ParseException e) {
+                        System.out.println("Invalid Time format");
+                    }
                 }
                 data[i] = new SimpleDateFormat(type.equals("Task") ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss").format(DateTime);
             }else{
